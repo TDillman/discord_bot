@@ -446,7 +446,7 @@ async def status(interaction: discord.Interaction):
         embed.add_field(name='Current Population', value=f'This is a {server.population} pop server', inline=True)
     embed.add_field(name='Connected Realms', value=server_string, inline=False)
     if server.has_queue:
-        embed.add_field(name='Queue Active', value='Server has a login queue')
+        embed.add_field(name='Queue Active ', value='Server has a login queue')
     embed.add_field(name="Timezone", value=server.timezone, inline=True)
     embed.set_thumbnail(
         url=might_logo)
