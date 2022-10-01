@@ -1,0 +1,6 @@
+#secrets
+bot_secrets.py
+./.idea
+
+#bot logs
+*.log
