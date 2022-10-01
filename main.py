@@ -24,6 +24,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)  # replace with your guild id
+might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
 
 yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
 api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
@@ -448,9 +449,8 @@ async def status(interaction: discord.Interaction):
         embed.add_field(name='Queue Active', value='Server has a login queue')
     embed.add_field(name="Timezone", value=server.timezone, inline=True)
     embed.set_thumbnail(
-        url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
-            'finishedsmall.png')
+        url=might_logo)
     await interaction.response.send_message(embed=embed)
 
 
-client.run('Nzc5NTAyNzYwMjE4NzIyMzQ2.GecYDc.IIu4pU0a6u8KUnq7EpU8LhLK53TYUbVTLfLTQA', log_handler=None)
+client.run(bot_secrets.DISCORD_API, log_handler=None)
