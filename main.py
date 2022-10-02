@@ -55,6 +55,7 @@ async def on_ready():
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
+    print(interaction.user.roles)
 
 
 # The rename decorator allows us to change the display of the parameter on Discord.
@@ -71,51 +72,6 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
-
-
-@client.tree.command()
-async def help(interaction: discord.Interaction):
-    """List out the bot commands"""
-    embed = discord.Embed(title='Bot Commands')
-    embed.add_field(name='User Commands',
-                    value=f'/abbs\n'
-                    '/aster\n'
-                    '/candercane\n'
-                    '/cool\n'
-                    '/daddychill\n'
-                    '/drew\n'
-                    '/golfclap\n'
-                    '/guacdrop\n'
-                    '/hakkd\n'
-                    '/happybirthday\n'
-                    '/hydrate\n'
-                    '/imdumb\n'
-                    '/imout\n'
-                    '/listen\n'
-                    '/lynkz\n'
-                    '/magic\n'
-                    '/myst\n'
-                    '/nyrixx\n'
-                    '/pig\n'
-                    '/pirate\n'
-                    '/rain\n'
-                    '/rightright\n'
-                    '/risn\n'
-                    '/shit\n'
-                    '/spooky\n'
-                    '/spoon\n'
-                    '/suckit\n'
-                    '/thisisfine\n'
-                    '/wat\n'
-                    '/wtf\n'
-                    '/yzu',
-                    inline=True)
-    embed.add_field(name='Other Commands',
-                    value='/status -- Arygos server status\n'
-                          '/token -- Get the current WoW token value\n'
-                          '/jams -- Search YouTube for a video\n',
-                    inline=True)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @client.tree.command()
@@ -435,5 +391,19 @@ async def status(interaction: discord.Interaction):
         url=might_logo)
     await interaction.response.send_message(embed=embed)
 
+
+command_list: list = [f'/{x.name}' for x in client.tree.walk_commands()]
+command_list.sort()
+help_string: str = f'\n'.join(str(name) for name in command_list)
+
+
+@client.tree.command()
+async def help(interaction: discord.Interaction) -> str:
+    """List out the bot commands"""
+    embed = discord.Embed(title='Bot Commands')
+    embed.add_field(name='User Commands',
+                    value=help_string,
+                    inline=True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 client.run(bot_secrets.DISCORD_API, log_handler=None)
