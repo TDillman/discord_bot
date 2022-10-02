@@ -51,6 +51,14 @@ async def on_ready():
     print('------')
 
 
+@client.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    embed = discord.Embed(title='Error')
+    embed.add_field(name='Command on Cooldown', value=f'That command is on cooldown for {error.retry_after:.2f} more seconds.')
+    embed.set_thumbnail(url='https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 @client.tree.command()
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
