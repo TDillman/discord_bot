@@ -402,7 +402,9 @@ async def status(interaction: discord.Interaction):
 
 command_list: list = [f'/{x.name}' for x in client.tree.walk_commands()]
 command_list.sort()
-help_string: str = f'\n'.join(str(name) for name in command_list)
+middle_index = len(command_list)//2
+help_string1: str = f'\n'.join(str(name) for name in command_list[:middle_index])
+help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:])
 
 
 @client.tree.command()
@@ -410,7 +412,10 @@ async def help(interaction: discord.Interaction) -> str:
     """List out the bot commands"""
     embed = discord.Embed(title='Bot Commands')
     embed.add_field(name='User Commands',
-                    value=help_string,
+                    value=help_string1,
+                    inline=True)
+    embed.add_field(name='User Commands',
+                    value=help_string2,
                     inline=True)
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
