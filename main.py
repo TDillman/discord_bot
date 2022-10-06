@@ -34,6 +34,9 @@ class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
+        self.overwatch_role = 1015277487112081420
+        self.movie_role = 980277929504284672
+        self.m_plus_role = 948681679701147649
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -42,6 +45,46 @@ class MyClient(discord.Client):
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
+
+class button_view(discord.ui.View):
+    def __init__(self) -> None:
+        super().__init__(timeout = None)
+
+    @discord.ui.button(label = "Overwatch", style=discord.ButtonStyle.green, custom_id="overwatch", emoji="🔫")
+    async def overwatch(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if type(client.overwatch_role) is not discord.Role:
+            client.overwatch_role = interaction.guild.get_role(1015277487112081420)
+
+        if client.overwatch_role not in interaction.user.roles:
+            await interaction.user.add_roles(client.overwatch_role)
+            await interaction.response.send_message(f'{client.overwatch_role.mention} has been added', ephemeral=True)
+
+        else:
+            await interaction.user.remove_roles(client.overwatch_role)
+            await interaction.response.send_message(f'{client.overwatch_role.mention} has been removed', ephemeral=True)
+
+    @discord.ui.button(label = "M+ Runner", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
+    async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if type(client.m_plus_role) is not discord.Role:
+            client.m_plus_role = interaction.guild.get_role(948681679701147649)
+
+        if client.m_plus_role not in interaction.user.roles:
+            await interaction.user.add_roles(client.m_plus_role)
+            await interaction.response.send_message(f'{client.m_plus_role} has been added', ephemeral=True)
+        else:
+            await interaction.user.remove_roles(client.m_plus_role)
+            await interaction.response.send_message(f'{client.m_plus_role.mention} has been removed', ephemeral=True)
+    @discord.ui.button(label = "Movie Night", style=discord.ButtonStyle.green, custom_id="movie_night", emoji="🍿")
+    async def movie_night(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if type(client.movie_role) is not discord.Role:
+            client.movie_role = interaction.guild.get_role(980277929504284672)
+
+        if client.movie_role not in interaction.user.roles:
+            await interaction.user.add_roles(client.movie_role)
+            await interaction.response.send_message(f'{client.movie_role.mention} has been added', ephemeral=True)
+        else:
+            await interaction.user.remove_roles(client.movie_role)
+            await interaction.response.send_message(f'{client.movie_role.mention} has been removed', ephemeral=True)
 
 
 @client.event
@@ -57,6 +100,18 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
     embed.add_field(name='Command on Cooldown', value=f'That command is on cooldown for {error.retry_after:.2f} more seconds.')
     embed.set_thumbnail(url='https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png')
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@client.tree.command()
+async def role_select(interaction: discord.Interaction):
+    if interaction.user.id == 165980889828818945:
+        embed = discord.Embed(title='Roles')
+        embed.add_field(name='Select Your Roles',
+                        value=f'Click the button you\'d like to get pings for! Click it again to remove the role.')
+        embed.set_thumbnail(url=might_logo)
+        await interaction.response.send_message(embed=embed, view = button_view())
+    else:
+        await interaction.response.send_message("You don't have permission to use this", ephemeral=True)
 
 
 @client.tree.command()
