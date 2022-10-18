@@ -23,8 +23,9 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)  # replace with your guild id
+MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)
 might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
+error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png'
 
 yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
 api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
@@ -38,6 +39,8 @@ class MyClient(discord.Client):
         self.movie_role = 980277929504284672
         self.m_plus_role = 948681679701147649
         self.pvp_role = 892432571814785063
+        self.colorado_role = 1030970627634511892
+        self.mightcon_role = 987514971481059418
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -57,10 +60,10 @@ class MyView(discord.ui.View):
             client.overwatch_role = interaction.guild.get_role(1015277487112081420)
         if client.overwatch_role not in interaction.user.roles:
             await interaction.user.add_roles(client.overwatch_role)
-            await interaction.response.send_message(f'{client.overwatch_role.mention} has been added', ephemeral=True)
+            await interaction.response.send_message(f'{client.overwatch_role.mention} has been added to your roles', ephemeral=True)
         else:
             await interaction.user.remove_roles(client.overwatch_role)
-            await interaction.response.send_message(f'{client.overwatch_role.mention} has been removed', ephemeral=True)
+            await interaction.response.send_message(f'{client.overwatch_role.mention} has been removed from your roles', ephemeral=True)
 
     @discord.ui.button(label = "WoW M+", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
     async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -68,10 +71,10 @@ class MyView(discord.ui.View):
             client.m_plus_role = interaction.guild.get_role(948681679701147649)
         if client.m_plus_role not in interaction.user.roles:
             await interaction.user.add_roles(client.m_plus_role)
-            await interaction.response.send_message(f'{client.m_plus_role.mention} has been added', ephemeral=True)
+            await interaction.response.send_message(f'{client.m_plus_role.mention} has been added to your roles', ephemeral=True)
         else:
             await interaction.user.remove_roles(client.m_plus_role)
-            await interaction.response.send_message(f'{client.m_plus_role.mention} has been removed', ephemeral=True)
+            await interaction.response.send_message(f'{client.m_plus_role.mention} has been removed from your roles', ephemeral=True)
 
     @discord.ui.button(label = "WoW PvP", style=discord.ButtonStyle.green, custom_id="wow_pvp", emoji="🪓")
     async def wow_pvp(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -95,6 +98,29 @@ class MyView(discord.ui.View):
             await interaction.user.remove_roles(client.movie_role)
             await interaction.response.send_message(f'{client.movie_role.mention} has been removed', ephemeral=True)
 
+    @discord.ui.button(label="Mightcon Vegas", style=discord.ButtonStyle.green, custom_id="mightcon_vegas", emoji="🎰")
+    async def mightcon(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if type(client.mightcon_role) is not discord.Role:
+            client.mightcon_role = interaction.guild.get_role(987514971481059418)
+        if client.mightcon_role not in interaction.user.roles:
+            await interaction.user.add_roles(client.mightcon_role)
+            await interaction.response.send_message(f'{client.mightcon_role.mention} has been added to your roles!\n'
+                                                    f'Make sure you update the sheet at https://1drv.ms/x/s!AkHIyFpbYJ2agmoleZoB1hQm8ad7?e=3Sf8z8', ephemeral=True)
+        else:
+            await interaction.user.remove_roles(client.mightcon_role)
+            await interaction.response.send_message(f'{client.mightcon_role.mention} has been removed', ephemeral=True)
+
+    @discord.ui.button(label="Colorado Peeps", style=discord.ButtonStyle.green, custom_id="colorado", emoji="🏔")
+    async def colorado(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if type(client.colorado_role) is not discord.Role:
+            client.colorado_role = interaction.guild.get_role(1030970627634511892)
+        if client.colorado_role not in interaction.user.roles:
+            await interaction.user.add_roles(client.colorado_role)
+            await interaction.response.send_message(f'{client.colorado_role.mention} has been added to your roles', ephemeral=True)
+        else:
+            await interaction.user.remove_roles(client.colorado_role)
+            await interaction.response.send_message(f'{client.colorado_role.mention} has been removed from your roles', ephemeral=True)
+
 
 @client.event
 async def on_ready():
@@ -113,7 +139,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
     if isinstance(error, commands.CommandOnCooldown):
         embed = discord.Embed(title='Error')
         embed.add_field(name='Command on Cooldown', value=f'That command is on cooldown for {error.retry_after:.2f} more seconds.')
-        embed.set_thumbnail(url='https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png')
+        embed.set_thumbnail(url=error_icon_url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @client.tree.error
@@ -122,7 +148,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
         embed = discord.Embed(title='Error')
         embed.add_field(name='Permission Missing', value=f"You're missing a permission to do that.")
         embed.add_field(name='Error', value=error, inline=False)
-        embed.set_thumbnail(url='https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png')
+        embed.set_thumbnail(url=error_icon_url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -477,6 +503,7 @@ async def status(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
+# Get the names of all the commands in this file to make a help command
 command_list: list = [f'/{x.name}' for x in client.tree.walk_commands()]
 command_list.sort()
 middle_index = len(command_list)//2
