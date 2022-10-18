@@ -35,29 +35,31 @@ class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
-        self.overwatch_role = 1015277487112081420
-        self.movie_role = 980277929504284672
-        self.m_plus_role = 948681679701147649
-        self.pvp_role = 892432571814785063
-        self.colorado_role = 1030970627634511892
-        self.mightcon_role = 987514971481059418
+        self.overwatch_role = bot_secrets.overwatch_role
+        self.movie_role = bot_secrets.movie_role
+        self.m_plus_role = bot_secrets.m_plus_role
+        self.pvp_role = bot_secrets.pvp_role
+        self.colorado_role = bot_secrets.colorado_role
+        self.mightcon_role = bot_secrets.mightcon_role
+        self.ready_to_raid_role = bot_secrets.ready_to_raid_role
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
+        self.add_view(RoleSelectView())
 
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
 
-class MyView(discord.ui.View):
+class RoleSelectView(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout = None)
 
     @discord.ui.button(label = "Overwatch", style=discord.ButtonStyle.green, custom_id="overwatch", emoji="🔫")
     async def overwatch(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.overwatch_role) is not discord.Role:
-            client.overwatch_role = interaction.guild.get_role(1015277487112081420)
+            client.overwatch_role = interaction.guild.get_role(bot_secrets.overwatch_role)
         if client.overwatch_role not in interaction.user.roles:
             await interaction.user.add_roles(client.overwatch_role)
             await interaction.response.send_message(f'{client.overwatch_role.mention} has been added to your roles', ephemeral=True)
@@ -68,7 +70,7 @@ class MyView(discord.ui.View):
     @discord.ui.button(label = "WoW M+", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
     async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.m_plus_role) is not discord.Role:
-            client.m_plus_role = interaction.guild.get_role(948681679701147649)
+            client.m_plus_role = interaction.guild.get_role(bot_secrets.m_plus_role)
         if client.m_plus_role not in interaction.user.roles:
             await interaction.user.add_roles(client.m_plus_role)
             await interaction.response.send_message(f'{client.m_plus_role.mention} has been added to your roles', ephemeral=True)
@@ -79,7 +81,7 @@ class MyView(discord.ui.View):
     @discord.ui.button(label = "WoW PvP", style=discord.ButtonStyle.green, custom_id="wow_pvp", emoji="🪓")
     async def wow_pvp(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.pvp_role) is not discord.Role:
-            client.pvp_role = interaction.guild.get_role(892432571814785063)
+            client.pvp_role = interaction.guild.get_role(bot_secrets.pvp_role)
         if client.pvp_role not in interaction.user.roles:
             await interaction.user.add_roles(client.pvp_role)
             await interaction.response.send_message(f'{client.pvp_role.mention} has been added', ephemeral=True)
@@ -90,7 +92,7 @@ class MyView(discord.ui.View):
     @discord.ui.button(label = "Movie Night", style=discord.ButtonStyle.green, custom_id="movie_night", emoji="🍿")
     async def movie_night(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.movie_role) is not discord.Role:
-            client.movie_role = interaction.guild.get_role(980277929504284672)
+            client.movie_role = interaction.guild.get_role(bot_secrets.movie_role)
         if client.movie_role not in interaction.user.roles:
             await interaction.user.add_roles(client.movie_role)
             await interaction.response.send_message(f'{client.movie_role.mention} has been added', ephemeral=True)
@@ -101,7 +103,7 @@ class MyView(discord.ui.View):
     @discord.ui.button(label="Mightcon Vegas", style=discord.ButtonStyle.green, custom_id="mightcon_vegas", emoji="🎰")
     async def mightcon(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.mightcon_role) is not discord.Role:
-            client.mightcon_role = interaction.guild.get_role(987514971481059418)
+            client.mightcon_role = interaction.guild.get_role(bot_secrets.mightcon_role)
         if client.mightcon_role not in interaction.user.roles:
             await interaction.user.add_roles(client.mightcon_role)
             await interaction.response.send_message(f'{client.mightcon_role.mention} has been added to your roles!\n'
@@ -113,7 +115,7 @@ class MyView(discord.ui.View):
     @discord.ui.button(label="Colorado Peeps", style=discord.ButtonStyle.green, custom_id="colorado", emoji="🏔")
     async def colorado(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.colorado_role) is not discord.Role:
-            client.colorado_role = interaction.guild.get_role(1030970627634511892)
+            client.colorado_role = interaction.guild.get_role(bot_secrets.colorado_role)
         if client.colorado_role not in interaction.user.roles:
             await interaction.user.add_roles(client.colorado_role)
             await interaction.response.send_message(f'{client.colorado_role.mention} has been added to your roles', ephemeral=True)
@@ -159,7 +161,7 @@ async def role_select(interaction: discord.Interaction):
     embed.add_field(name='Select Your Roles',
                     value=f"Click the button you'd like to get pings for! Click it again to remove the role.")
     embed.set_thumbnail(url=might_logo)
-    await interaction.response.send_message(embed=embed, view = MyView())
+    await interaction.response.send_message(embed=embed, view = RoleSelectView())
 
 
 @client.tree.command()
