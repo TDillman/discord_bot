@@ -62,10 +62,14 @@ class RoleSelectView(discord.ui.View):
             client.overwatch_role = interaction.guild.get_role(bot_secrets.overwatch_role)
         if client.overwatch_role not in interaction.user.roles:
             await interaction.user.add_roles(client.overwatch_role)
-            await interaction.response.send_message(f'{client.overwatch_role.mention} has been added to your roles', ephemeral=True)
+            button.label = "Remove Overwatch Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.overwatch_role)
-            await interaction.response.send_message(f'{client.overwatch_role.mention} has been removed from your roles', ephemeral=True)
+            button.label = "Add Overwatch Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label = "WoW M+", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
     async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -73,10 +77,14 @@ class RoleSelectView(discord.ui.View):
             client.m_plus_role = interaction.guild.get_role(bot_secrets.m_plus_role)
         if client.m_plus_role not in interaction.user.roles:
             await interaction.user.add_roles(client.m_plus_role)
-            await interaction.response.send_message(f'{client.m_plus_role.mention} has been added to your roles', ephemeral=True)
+            button.label = "Remove M+ Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.m_plus_role)
-            await interaction.response.send_message(f'{client.m_plus_role.mention} has been removed from your roles', ephemeral=True)
+            button.label = "Add M+ Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label = "WoW PvP", style=discord.ButtonStyle.green, custom_id="wow_pvp", emoji="🪓")
     async def wow_pvp(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -84,10 +92,14 @@ class RoleSelectView(discord.ui.View):
             client.pvp_role = interaction.guild.get_role(bot_secrets.pvp_role)
         if client.pvp_role not in interaction.user.roles:
             await interaction.user.add_roles(client.pvp_role)
-            await interaction.response.send_message(f'{client.pvp_role.mention} has been added', ephemeral=True)
+            button.label = "Remove PvP Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.pvp_role)
-            await interaction.response.send_message(f'{client.pvp_role.mention} has been removed', ephemeral=True)
+            button.label = "Add PvP Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label = "Movie Night", style=discord.ButtonStyle.green, custom_id="movie_night", emoji="🍿")
     async def movie_night(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -95,10 +107,14 @@ class RoleSelectView(discord.ui.View):
             client.movie_role = interaction.guild.get_role(bot_secrets.movie_role)
         if client.movie_role not in interaction.user.roles:
             await interaction.user.add_roles(client.movie_role)
-            await interaction.response.send_message(f'{client.movie_role.mention} has been added', ephemeral=True)
+            button.label = "Remove Movie Night Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.movie_role)
-            await interaction.response.send_message(f'{client.movie_role.mention} has been removed', ephemeral=True)
+            button.label = "Add Mmovie Night Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="Mightcon Vegas", style=discord.ButtonStyle.green, custom_id="mightcon_vegas", emoji="🎰")
     async def mightcon(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -106,11 +122,16 @@ class RoleSelectView(discord.ui.View):
             client.mightcon_role = interaction.guild.get_role(bot_secrets.mightcon_role)
         if client.mightcon_role not in interaction.user.roles:
             await interaction.user.add_roles(client.mightcon_role)
+            button.label = "Remove Mightcon Vegas Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
             await interaction.response.send_message(f'{client.mightcon_role.mention} has been added to your roles!\n'
                                                     f'Make sure you update the sheet at https://1drv.ms/x/s!AkHIyFpbYJ2agmoleZoB1hQm8ad7?e=3Sf8z8', ephemeral=True)
         else:
             await interaction.user.remove_roles(client.mightcon_role)
-            await interaction.response.send_message(f'{client.mightcon_role.mention} has been removed', ephemeral=True)
+            button.label = "Add Mightcon Vegas Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="Colorado Peeps", style=discord.ButtonStyle.green, custom_id="colorado", emoji="🏔")
     async def colorado(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -118,10 +139,14 @@ class RoleSelectView(discord.ui.View):
             client.colorado_role = interaction.guild.get_role(bot_secrets.colorado_role)
         if client.colorado_role not in interaction.user.roles:
             await interaction.user.add_roles(client.colorado_role)
-            await interaction.response.send_message(f'{client.colorado_role.mention} has been added to your roles', ephemeral=True)
+            button.label = "Remove Colorado Peeps Role"
+            button.style = discord.ButtonStyle.red
+            await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.colorado_role)
-            await interaction.response.send_message(f'{client.colorado_role.mention} has been removed from your roles', ephemeral=True)
+            button.label = "Add Colorado Peeps Role"
+            button.style = discord.ButtonStyle.green
+            await interaction.response.edit_message(view=self)
 
 
 @client.event
