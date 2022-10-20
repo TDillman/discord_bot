@@ -2,6 +2,7 @@ import discord
 import logging
 import logging.handlers
 import bot_secrets
+import random
 
 from discord import app_commands, ui
 from blizzardapi import BlizzardApi
@@ -29,6 +30,15 @@ error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Err
 
 yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
 api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
+
+kat_gif_list = [
+    "https://tenor.com/view/eye-squint-markiplier-glare-suspicious-gif-15742154",
+    "https://tenor.com/view/really-what-squint-chicken-gif-15168180",
+    "https://tenor.com/view/skeptical-futurama-fry-hmmm-i-got-my-eyes-on-you-gif-17101711",
+    "https://tenor.com/view/buffy-the-vampire-slayer-eye-gif-26036478",
+    "https://tenor.com/view/dog-suspicious-suspicious-dog-squinting-squint-chihuahua-squint-gif-26088382",
+    "https://tenor.com/view/pusheen-pusheen-cat-cat-cartoon-cute-gif-25196813"
+]
 
 
 class MyClient(discord.Client):
@@ -210,6 +220,14 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
+
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def kat(interaction: discord.Interaction):
+    """Squints"""
+    kat_gif = random.choice(kat_gif_list)
+    await interaction.response.send_message(kat_gif)
 
 
 @client.tree.command()
