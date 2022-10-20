@@ -246,6 +246,13 @@ async def scrumpy(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def cheat(interaction: discord.Interaction):
+    """The excitement!"""
+    await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
+
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def golfclap(interaction: discord.Interaction):
     """Well played"""
     await interaction.response.send_message('https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611')
