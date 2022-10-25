@@ -1,7 +1,10 @@
 import discord
 import logging
+import asyncio
+import datetime
 import logging.handlers
 import bot_secrets
+import gspread
 import random
 
 from discord import app_commands, ui
@@ -9,7 +12,8 @@ from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
 from dataclasses import dataclass, field
 
-logger = logging.getLogger('discord')
+
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logging.getLogger('discord.http').setLevel(logging.INFO)
 
@@ -28,9 +32,6 @@ MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)
 might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
 error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png'
 
-yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
-api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
-
 kat_gif_list = [
     "https://tenor.com/view/eye-squint-markiplier-glare-suspicious-gif-15742154",
     "https://tenor.com/view/really-what-squint-chicken-gif-15168180",
@@ -40,6 +41,10 @@ kat_gif_list = [
     "https://tenor.com/view/pusheen-pusheen-cat-cat-cartoon-cute-gif-25196813"
 ]
 
+#YouTube API
+yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
+#Blizzard API
+api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -122,7 +127,7 @@ class RoleSelectView(discord.ui.View):
             await interaction.response.edit_message(view=self)
         else:
             await interaction.user.remove_roles(client.movie_role)
-            button.label = "Add Mmovie Night Role"
+            button.label = "Add Movie Night Role"
             button.style = discord.ButtonStyle.green
             await interaction.response.edit_message(view=self)
 
@@ -166,14 +171,9 @@ async def on_ready():
     print('------')
 
 
-@client.event
-async def on_typing(channel, user, when):
-    print(f'{user} is typing in {channel} {when}')
-
-
 @client.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    if isinstance(error, commands.CommandOnCooldown):
+    if isinstance(error, app_commands.errors.CommandOnCooldown):
         embed = discord.Embed(title='Error')
         embed.add_field(name='Command on Cooldown', value=f'That command is on cooldown for {error.retry_after:.2f} more seconds.')
         embed.set_thumbnail(url=error_icon_url)
@@ -214,21 +214,11 @@ async def send(interaction: discord.Interaction, text_to_send: str):
     """Sends the text into the current channel."""
     await interaction.response.send_message(text_to_send)
 
-
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
-
-
-@client.tree.command()
-@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
-async def kat(interaction: discord.Interaction):
-    """Squints"""
-    kat_gif = random.choice(kat_gif_list)
-    await interaction.response.send_message(kat_gif)
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -236,20 +226,11 @@ async def spooky(interaction: discord.Interaction):
     """There's always money in the banana stand!"""
     await interaction.response.send_message('https://tenor.com/view/arrested-development-claw-hand-juice-box-laughing-evil-laugh-gif-5335530')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def scrumpy(interaction: discord.Interaction):
     """Just his opinion"""
     await interaction.response.send_message('Thinks your bags are awful')
-
-
-@client.tree.command()
-@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
-async def cheat(interaction: discord.Interaction):
-    """The excitement!"""
-    await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -257,13 +238,11 @@ async def golfclap(interaction: discord.Interaction):
     """Well played"""
     await interaction.response.send_message('https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def whatever(interaction: discord.Interaction):
     """Whatever man"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/765619338337058827/802299499908563024/whatever.gif')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -271,13 +250,11 @@ async def cool(interaction: discord.Interaction):
     """Peralta says"""
     await interaction.response.send_message('https://tenor.com/view/andy-samberg-brooklyn99-jake-peralta-cool-gif-12063970')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst(interaction: discord.Interaction):
     """Is it though?"""
     await interaction.response.send_message('https://tenor.com/view/is-it-though-thor-smile-gif-13334930')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -285,13 +262,11 @@ async def beylock(interaction: discord.Interaction):
     """I love this song"""
     await interaction.response.send_message('https://imgur.com/a/xux2u6p')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def happybirthday(interaction: discord.Interaction):
     """Party at Kat's place!"""
     await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -299,13 +274,11 @@ async def magic(interaction: discord.Interaction):
     """Don't ask how"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/761438362720272394/Kat_Confetti.gif')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def lynkz(interaction: discord.Interaction):
     """Who is that?"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/899091363046522910/unknown.png')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -313,13 +286,11 @@ async def candercane(interaction: discord.Interaction):
     """This child is furious"""
     await interaction.response.send_message('https://giphy.com/gifs/angry-mad-anger-l1J9u3TZfpmeDLkD6')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wat(interaction: discord.Interaction):
     """wat"""
     await interaction.response.send_message('https://imgur.com/a/PnB5eFk')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -327,13 +298,11 @@ async def thisisfine(interaction: discord.Interaction):
     """I'll probably survive"""
     await interaction.response.send_message('https://imgur.com/a/uDAO5In')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def pirate(interaction: discord.Interaction):
     """Pirate shimmy!"""
     await interaction.response.send_message('https://imgur.com/a/TDot4Ba')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -341,13 +310,11 @@ async def suckit(interaction: discord.Interaction):
     """Suck it!"""
     await interaction.response.send_message('https://imgur.com/Fy6RhWI')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def risn(interaction: discord.Interaction):
     """K"""
     await interaction.response.send_message('https://www.circlek.com/themes/custom/circlek/images/logos/logo-full-color-rgb.jpg')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -355,13 +322,11 @@ async def hakkd(interaction: discord.Interaction):
     """Don't let it happen again"""
     await interaction.response.send_message('https://tenor.com/view/mad-monster-dont-let-it-happen-again-gif-14024298')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wtf(interaction: discord.Interaction):
     """What the fuck?"""
     await interaction.response.send_message('https://giphy.com/gifs/what-the-fuck-wtf-ukGm72ZLZvYfS')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -369,13 +334,11 @@ async def rain(interaction: discord.Interaction):
     """Lil bih"""
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/676183384061378571/856642945481310228/unknown.png')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imout(interaction: discord.Interaction):
     """Peace out"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183306924064768/866005404839837706/sylvanas.gif')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -383,13 +346,11 @@ async def daddychill(interaction: discord.Interaction):
     """What the hell is even that?!"""
     await interaction.response.send_message('https://tenor.com/view/what-the-hell-is-even-gif-20535402')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def guacdrop(interaction: discord.Interaction):
     """Not the guacamole!"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/917450971569877044/917465265036488704/20211105_213516.jpg')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -397,13 +358,11 @@ async def rightright(interaction: discord.Interaction):
     """From a show about nothing"""
     await interaction.response.send_message('https://tenor.com/view/seinfeld-jerry-seinfeld-oh-right-agree-gif-4436696')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def shit(interaction: discord.Interaction):
     """Get your poop in a group"""
     await interaction.response.send_message('https://giphy.com/gifs/get-well-then-woTdBa435yy6A')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -411,13 +370,11 @@ async def hydrate(interaction: discord.Interaction):
     """Hydration is important"""
     await interaction.response.send_message('https://tenor.com/view/water-smile-drink-water-gif-13518129')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spoon(interaction: discord.Interaction):
     """My spoon is too big"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/503025662546935809/747820543918735370/A_little_party_never_killed_no_body_gif.gif')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -425,13 +382,11 @@ async def imdumb(interaction: discord.Interaction):
     """I'm dumb"""
     await interaction.response.send_message('https://tenor.com/view/winston-schmidt-max-greenfield-new-girl-gif-15041554')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def aster(interaction: discord.Interaction):
     """That face. That goddamn face."""
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -439,13 +394,11 @@ async def abba(interaction: discord.Interaction):
     """Hehehehehehehe"""
     await interaction.response.send_message('https://tenor.com/view/lizard-laughing-laughinglizard-hehehe-gif-5215392')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def drew(interaction: discord.Interaction):
     """Cold. Dead. Lifeless."""
     await interaction.response.send_message('https://tenor.com/view/sparkly-eyes-joy-happy-anime-hug-gif-15852045')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -453,13 +406,11 @@ async def pig(interaction: discord.Interaction):
     """This little piggy..."""
     await interaction.response.send_message('https://tenor.com/view/pig-cute-gif-21946909')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def listen(interaction: discord.Interaction):
     """listen here"""
     await interaction.response.send_message('https://i.pinimg.com/originals/ef/a6/48/efa648c67f3cb05287ded99612af130f.png')
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -467,13 +418,24 @@ async def nyrixx(interaction: discord.Interaction):
     """Never sneak up on a Schrute."""
     await interaction.response.send_message('https://tenor.com/view/office-dwight-schrute-surprised-gif-14541388')
 
-
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def yzu(interaction: discord.Interaction):
     """eli5"""
     await interaction.response.send_message('https://tenor.com/view/confused-the-office-michael-scott-steve-carell-explain-this-to-me-like-im-five-gif-4527435')
 
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def cheat(interaction: discord.Interaction):
+    """Get excited"""
+    await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def kat(interaction: discord.Interaction):
+    """Squints"""
+    kat_gif = random.choice(kat_gif_list)
+    await interaction.response.send_message(kat_gif)
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -487,14 +449,12 @@ async def jams(interaction: discord.Interaction, search: str):
         youtube_video_url = f"https://www.youtube.com/watch?v={results[0]['video_id']}"
         await interaction.response.send_message(youtube_video_url)
 
-
 @client.tree.command()
 @app_commands.describe(mock='Mocking text')
 async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
     mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -503,6 +463,7 @@ async def token(interaction: discord.Interaction):
     Returns an embed with the current WoW token price in gold
     """
     token_object = api_client.wow.game_data.get_token_index("us", "en_US")
+    print(token_object)
 
     embed = discord.Embed(title='WoW Token')
     embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
@@ -510,7 +471,6 @@ async def token(interaction: discord.Interaction):
         url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
             'finishedsmall.png')
     await interaction.response.send_message(embed=embed)
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -550,9 +510,161 @@ async def status(interaction: discord.Interaction):
     if server.has_queue:
         embed.add_field(name='Queue Active', value='Server has a login queue')
     embed.add_field(name="Timezone", value=server.timezone, inline=True)
-    embed.set_thumbnail(
-        url=might_logo)
+    embed.set_thumbnail(url=might_logo)
     await interaction.response.send_message(embed=embed)
+
+
+# Google Sheets API
+gc = gspread.service_account()
+worksheet = gc.open('Raid Requirements').get_worksheet(1)
+@client.tree.command(description="Checks a user's character for raid readiness")
+@discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader")
+@app_commands.describe(character_name='character name')
+@app_commands.describe(character_server='server name')
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def r2r(interaction: discord.Interaction, character_name: str, character_server: str):
+    """
+    Returns an embed with the specified character's R2R status
+    """
+
+    min_ilvl: int = int(worksheet.col_values(1)[0])
+    bracer_enchants_list: list = worksheet.col_values(2)[1:]
+    weapon_enchants_list: list = worksheet.col_values(3)[1:]
+    chest_enchants_list: list = worksheet.col_values(4)[1:]
+    ring_enchants_list: list = worksheet.col_values(5)[1:]
+    cloak_enchants_list: list = worksheet.col_values(6)[1:]
+    boots_enchants_list: list = worksheet.col_values(7)[1:]
+
+    embed = discord.Embed(title=f'Fetching {character_name.title()}-{character_server.title()}\'s Armory Data...')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await asyncio.sleep(1)
+    server_slug = character_server.lower().replace("'", "").replace(" ", "")
+    character_profile = api_client.wow.profile.get_character_profile_summary("us", "en_US", server_slug,
+                                                                                 character_name.lower())
+    character_equipment = api_client.wow.profile.get_character_equipment_summary("us", "en_US", server_slug,
+                                                                                        character_name.lower())
+    embed2 = discord.Embed(title='Parsing API Response')
+    await interaction.edit_original_response(embed=embed2)
+    await asyncio.sleep(.5)
+
+    character_name = character_profile['name']
+    character_level = character_profile['level']
+    character_spec = character_profile['active_spec']['name']
+    character_ilvl_avg = float(character_profile['average_item_level'])
+    character_class = character_profile['character_class']['name']
+    character_last_login = character_profile['last_login_timestamp']
+
+    for item in character_equipment['equipped_items']:
+        if item['slot']['type'] == 'WRIST':
+            bracer_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'MAIN_HAND':
+            weapon_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'CHEST':
+            chest_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'FINGER_1':
+            ring1_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'FINGER_2':
+            ring2_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'BACK':
+            cloak_enchant = item['enchantments'][0]['source_item']['name']
+        if item['slot']['type'] == 'FEET':
+            boots_enchant = item['enchantments'][0]['source_item']['name']
+
+    embed3 = discord.Embed(title='Building Ready to Raid Table')
+    await interaction.edit_original_response(embed=embed3)
+    await asyncio.sleep(.5)
+
+    embed4 = discord.Embed(title='Ready to Raid',
+                           description=f'{character_name}, level {character_level} {character_spec} {character_class}')
+
+    checkmark = '✅'
+    xmark = '❌'
+
+    # Check character ilvl average against R2R minimum
+    if character_ilvl_avg >= min_ilvl:
+        ilvl_check = True
+        embed4.add_field(name='Item Level', value=f'{checkmark} {character_ilvl_avg}', inline=False)
+    if character_ilvl_avg < min_ilvl:
+        ilvl_check = False
+        embed4.add_field(name='Item Level', value=f'{xmark} {character_ilvl_avg}', inline=False)
+
+    embed4.add_field(name='Enchants', value="------------------------------------", inline=False)
+
+    # Check weapon enchant against R2R list
+    if weapon_enchant in weapon_enchants_list:
+        weapon_check = True
+        embed4.add_field(name='Weapon', value=f'{checkmark} {weapon_enchant}', inline=False)
+    else:
+        weapon_check = False
+        embed4.add_field(name='Item Level', value=f'{xmark} {weapon_enchant}', inline=False)
+
+    # Check cloak enchant against R2R list
+    if cloak_enchant in cloak_enchants_list:
+        cloak_check = True
+        embed4.add_field(name='Cloak', value=f'{checkmark} {cloak_enchant}', inline=False)
+    else:
+        cloak_check = False
+        embed4.add_field(name='Cloak', value=f'{xmark} {cloak_enchant}', inline=False)
+
+    # Check chest enchant against R2R list
+    if chest_enchant in chest_enchants_list:
+        chest_check = True
+        embed4.add_field(name='Chest', value=f'{checkmark} {chest_enchant}', inline=False)
+    else:
+        chest_check = False
+        embed4.add_field(name='Chest', value=f'{xmark} {chest_enchant}', inline=False)
+
+    # Check boots enchant against R2R list
+    if boots_enchant in boots_enchants_list:
+        boots_check = True
+        embed4.add_field(name='Boots', value=f'{checkmark} {boots_enchant}', inline=False)
+    else:
+        boots_check = False
+        embed4.add_field(name='Boots', value=f'{xmark} {boots_enchant}', inline=False)
+
+    # Check ring 1 enchant against R2R list
+    if ring1_enchant in ring_enchants_list:
+        ring1_check = True
+        embed4.add_field(name='Ring 1', value=f'{checkmark} {ring1_enchant}', inline=True)
+    else:
+        ring1_check = False
+        embed4.add_field(name='Ring 1', value=f'{xmark} {ring1_enchant}', inline=True)
+
+    # Check ring 2 enchant against R2R list
+    if ring2_enchant in ring_enchants_list:
+        ring2_check = True
+        embed4.add_field(name='Ring 2', value=f'{checkmark} {ring2_enchant}', inline=True)
+    else:
+        ring2_check = False
+        embed4.add_field(name='Ring 2', value=f'{xmark} {ring2_enchant}', inline=True)
+
+    # Check bracer enchant against R2R list
+    if bracer_enchant in bracer_enchants_list:
+        bracer_check = True
+        embed4.add_field(name='Bracers', value=f'{checkmark} {bracer_enchant}', inline=False)
+    else:
+        bracer_check = False
+        embed4.add_field(name='Bracers', value=f'{xmark} {bracer_enchant}', inline=False)
+
+    # Check booleans from previous checks to determine ready to raid status
+    if ilvl_check and weapon_check and cloak_check and chest_check and boots_check and ring1_check and ring2_check and bracer_check:
+        r2r_check = True
+        embed4.add_field(name='Ready to Raid', value=f'{checkmark} Ready to Raid', inline=False)
+    else:
+        r2r_check = False
+        embed4.add_field(name='Ready to Raid', value=f'{xmark} Not Ready to Raid', inline=False)
+
+    if r2r_check == True:
+        r2r_color = 0x00ff00  # Green for up
+    else:
+        r2r_color = 0xff0000  # Red for down
+
+    datetime_last_login = datetime.datetime.fromtimestamp(character_last_login / 1000)
+    embed4.set_footer(text=f'Last login: {datetime_last_login}')
+    embed4.color = r2r_color
+    embed4.set_thumbnail(url=might_logo)
+
+    await interaction.edit_original_response(embed=embed4)
 
 
 # Get the names of all the commands in this file to make a help command
