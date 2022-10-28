@@ -6,6 +6,7 @@ import logging.handlers
 import bot_secrets
 import gspread
 import random
+import requests
 
 from discord import app_commands, ui
 from blizzardapi import BlizzardApi
@@ -45,6 +46,8 @@ kat_gif_list = [
 yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
 #Blizzard API
 api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SECRET_ID)
+# Google Sheets API
+gc = gspread.service_account()
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -426,6 +429,12 @@ async def yzu(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def ben(interaction: discord.Interaction):
+    """Finger"""
+    await interaction.response.send_message('https://media.discordapp.net/attachments/199644505845137408/798327813479727114/2015-02-10.gif')
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheat(interaction: discord.Interaction):
     """Get excited"""
     await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
@@ -436,6 +445,15 @@ async def kat(interaction: discord.Interaction):
     """Squints"""
     kat_gif = random.choice(kat_gif_list)
     await interaction.response.send_message(kat_gif)
+
+@client.tree.command()
+@app_commands.describe(number='Which number are you interested in?')
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def number(interaction: discord.Interaction, number: int):
+    """Number facts!"""
+    number_fact_request = requests.get(f'http://numbersapi.com/{number}')
+    number_fact = number_fact_request.text
+    await interaction.response.send_message(number_fact)
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -455,6 +473,35 @@ async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
     mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
+
+movie_worksheet = gc.open('Beyplex').get_worksheet(0)
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def movie(interaction: discord.Interaction):
+    """Get a random movie from Beyplex"""
+
+    movie_list_length = range(len(movie_worksheet.col_values(1)))
+    movie_index_pick = random.choice(movie_list_length)
+    movie_data = movie_worksheet.row_values(movie_index_pick)
+    movie_name = movie_data[0]
+    movie_rating = movie_data[1]
+    movie_release = movie_data[2]
+    movie_description = movie_data[3]
+    movie_tagline = movie_data[4]
+    movie_audience_rating = movie_data[5]
+    movie_duration = movie_data[6]
+    movie_genres = movie_data[7]
+    movie_actors = movie_data[8]
+
+    embed = discord.Embed(title=f'{movie_name} ({movie_rating})\nRuntime: {movie_duration}', description=movie_tagline, color=0x00ff00)
+    embed.add_field(name='Description', value=movie_description, inline=False)
+    embed.add_field(name='Genres', value=movie_genres, inline=False)
+    embed.add_field(name='Actors', value=movie_actors, inline=False)
+    embed.add_field(name='Audience Rating', value=movie_audience_rating, inline=True)
+    embed.add_field(name='Release Date', value=movie_release, inline=True)
+    embed.set_footer(text=f'Movie {movie_index_pick} of {len(movie_worksheet.col_values(1))}')
+
+    await interaction.response.send_message(embed=embed)
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -513,10 +560,7 @@ async def status(interaction: discord.Interaction):
     embed.set_thumbnail(url=might_logo)
     await interaction.response.send_message(embed=embed)
 
-
-# Google Sheets API
-gc = gspread.service_account()
-worksheet = gc.open('Raid Requirements').get_worksheet(1)
+raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @client.tree.command(description="Checks a user's character for raid readiness")
 @discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader")
 @app_commands.describe(character_name='character name')
@@ -528,12 +572,12 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     """
 
     min_ilvl: int = int(worksheet.col_values(1)[0])
-    bracer_enchants_list: list = worksheet.col_values(2)[1:]
-    weapon_enchants_list: list = worksheet.col_values(3)[1:]
-    chest_enchants_list: list = worksheet.col_values(4)[1:]
-    ring_enchants_list: list = worksheet.col_values(5)[1:]
-    cloak_enchants_list: list = worksheet.col_values(6)[1:]
-    boots_enchants_list: list = worksheet.col_values(7)[1:]
+    bracer_enchants_list: list = raid_worksheet.col_values(2)[1:]
+    weapon_enchants_list: list = raid_worksheet.col_values(3)[1:]
+    chest_enchants_list: list = raid_worksheet.col_values(4)[1:]
+    ring_enchants_list: list = raid_worksheet.col_values(5)[1:]
+    cloak_enchants_list: list = raid_worksheet.col_values(6)[1:]
+    boots_enchants_list: list = raid_worksheet.col_values(7)[1:]
 
     embed = discord.Embed(title=f'Fetching {character_name.title()}-{character_server.title()}\'s Armory Data...')
     await interaction.response.send_message(embed=embed, ephemeral=True)
