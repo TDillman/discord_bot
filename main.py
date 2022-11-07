@@ -516,15 +516,6 @@ async def kat(interaction: discord.Interaction):
     await interaction.response.send_message(kat_gif)
 
 @client.tree.command()
-@app_commands.describe(number='Which number are you interested in?')
-@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
-async def number(interaction: discord.Interaction, number: int):
-    """Number facts!"""
-    number_fact_request = requests.get(f'http://numbersapi.com/{number}')
-    number_fact = number_fact_request.text
-    await interaction.response.send_message(number_fact)
-
-@client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 @app_commands.describe(search='Search criteria')
 async def jams(interaction: discord.Interaction, search: str):
@@ -561,6 +552,7 @@ async def pick(interaction: discord.Interaction):
     embed = discord.Embed(title=f"You should play {wow_spec} {wow_class} ({spec_type})", color=color, description=description)
     file = discord.File(f'./wow_icons/{icon}', filename=icon)
     embed.set_thumbnail(url=f'attachment://{icon}')
+    embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar)
 
     await interaction.response.send_message(file=file, embed=embed)
 
