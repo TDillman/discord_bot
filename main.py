@@ -330,6 +330,12 @@ async def myst(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def myst2(interaction: discord.Interaction):
+    """I mean..."""
+    await interaction.response.send_message('https://tenor.com/view/shrug-what-huh-will-smith-i-mean-gif-15916247')
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def beylock(interaction: discord.Interaction):
     """I love this song"""
     await interaction.response.send_message('https://imgur.com/a/xux2u6p')
