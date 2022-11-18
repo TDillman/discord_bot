@@ -7,7 +7,8 @@ import bot_secrets
 import gspread
 import random
 import requests
-import boto3
+import json
+import os
 
 from discord import app_commands, ui
 from blizzardapi import BlizzardApi
@@ -33,6 +34,7 @@ logger.addHandler(handler)
 MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)
 might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
 error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png'
+wow_url = "https://owen-wilson-wow-api.herokuapp.com/wows/random"
 
 
 kat_gif_list = [
@@ -129,6 +131,8 @@ class MyClient(discord.Client):
         self.colorado_role = bot_secrets.colorado_role
         self.mightcon_role = bot_secrets.mightcon_role
         self.ready_to_raid_role = bot_secrets.ready_to_raid_role
+        self.guild_member_role = bot_secrets.guild_member_role
+        self.raid_friends_role = bot_secrets.raid_friends_role
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -523,6 +527,35 @@ async def kat(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def cheers(interaction: discord.Interaction):
+    """Cheers mate"""
+    await interaction.response.send_message("https://cdn.discordapp.com/attachments/775444197468667904/1042974872407646218/trim.9B102A43-2EA1-4846-847C-25468EB6804C.gif")
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def wow(interaction: discord.Interaction):
+    """Wow"""
+    response = requests.get(wow_url)
+    if response.status_code == 200:
+        movie_object = json.loads(requests.get(wow_url).content)
+        title = movie_object[0]["movie"]
+        wow_vid = movie_object[0]["video"]["360p"]
+        timestamp = movie_object[0]["timestamp"]
+        character = movie_object[0]["character"]
+        year = movie_object[0]["year"]
+        current_wow = movie_object[0]["current_wow_in_movie"]
+        total_wows = movie_object[0]["total_wows_in_movie"]
+        director = movie_object[0]["director"]
+        full_line = movie_object[0]["full_line"]
+        await interaction.response.send_message(f"{title} ({year}), directed by {director}\n"
+                       f"At {timestamp}, {character}: Wow number {current_wow} out of {total_wows} total\n"
+                       f"{wow_vid}\n"
+                       f"\"{full_line}\"")
+    else:
+        await interaction.response.send_message("Can't communicate with API. Sorry :(")
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 @app_commands.describe(search='Search criteria')
 async def jams(interaction: discord.Interaction, search: str):
     """Search YouTube for a video!"""
@@ -541,9 +574,27 @@ async def mock(interaction: discord.Interaction, mock: str):
     await interaction.response.send_message(mocking_text)
 
 @client.tree.command()
+async def mightcon2(interaction: discord.Interaction):
+    """Mightcon 2: Las Vegas memories"""
+    # Randomly selects an image to send to Discord
+    path = "/home/ubuntu/beymax/mightcon2_pics"
+    files = os.listdir(path)
+    image = random.choice(files)
+    embed = discord.Embed(title="Mightcon 2: Las Vegas", description="Random memory from Mightcon 2!",
+                          color=0x0000ff, url="https://imgur.com/a/iJ3axyF")
+    file = discord.File(f"{path}/{image}", filename=image)
+    embed.set_image(url=f"attachment://{image}")
+    await interaction.response.send_message(embed=embed, file=file)
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def sixtynine(interaction: discord.Interaction):
+    """Nice"""
+    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1039705067235835934/1043215596181016666/IMG_3549.jpg")
+
+@client.tree.command()
 async def pick(interaction: discord.Interaction):
     """What should I play in Dragonflight?"""
-
     # Select random class from wow_spec_dict
     wow_class = random.choice(list(wow_spec_dict.keys()))
 
@@ -555,7 +606,8 @@ async def pick(interaction: discord.Interaction):
     description = wow_spec_dict[wow_class][wow_spec][2]
     icon = wow_spec_dict[wow_class][wow_spec][3]
 
-    embed = discord.Embed(title=f"You should play {wow_spec} {wow_class} ({spec_type})", color=color, description=description)
+    embed = discord.Embed(title=f"You should play {wow_spec} {wow_class} ({spec_type})", color=color,
+                          description=description)
     file = discord.File(f'./wow_icons/{icon}', filename=icon)
     embed.set_thumbnail(url=f'attachment://{icon}')
     embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar)
