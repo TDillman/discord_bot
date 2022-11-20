@@ -18,13 +18,13 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-logging.getLogger('discord.http').setLevel(logging.INFO)
+logging.getLogger(__name__).setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename='discord.log',
+    filename='python.log',
     encoding='utf-8',
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
-    backupCount=5,  # Rotate through 5 files
+    maxBytes=5 * 1024 * 1024,  # 5 MiB
+    backupCount=15,  # Rotate through 15 files
 )
 dt_fmt = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
@@ -279,8 +279,6 @@ async def role_select(interaction: discord.Interaction):
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
-    print(interaction.user.roles)
-
 
 # The rename decorator allows us to change the display of the parameter on Discord.
 @client.tree.command()
@@ -291,10 +289,25 @@ async def send(interaction: discord.Interaction, text_to_send: str):
     await interaction.response.send_message(text_to_send)
 
 # This context menu command only works on members
-@client.tree.context_menu(name='Show Join Date')
-async def show_join_date(interaction: discord.Interaction, member: discord.Member):
-    # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
+@client.tree.context_menu(name='Show Member Info')
+async def show_member_info(interaction: discord.Interaction, member: discord.Member):
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    tdelta = now - member.joined_at
+    if tdelta.days == 0:
+        joined_at = f'That\'s {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+    else:
+        joined_at = f'That\'s {tdelta.days} days, {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+    if len([role.mention for role in member.roles[1:]]) == 0:
+        roles = 'None'
+    else:
+        roles = '\n'.join([role.mention for role in member.roles[1:]])
+    #embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
+    embed = discord.Embed(title=f'Member Info for {member}')
+    embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
+                    value=joined_at)
+    embed.add_field(name="Roles", value=roles, inline=False)
+    embed.set_author(name=member.display_name, icon_url=member.avatar)
+    await interaction.response.send_message(embed=embed)
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
