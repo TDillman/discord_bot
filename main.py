@@ -14,11 +14,10 @@ from discord import app_commands, ui
 from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
 from dataclasses import dataclass, field
-from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-logging.getLogger(__name__).setLevel(logging.INFO)
+logging.getLogger(__name__).setLevel(logging.DEBUG)
 
 handler = logging.handlers.RotatingFileHandler(
     filename='python.log',
@@ -291,23 +290,26 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Member Info')
 async def show_member_info(interaction: discord.Interaction, member: discord.Member):
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
-    tdelta = now - member.joined_at
-    if tdelta.days == 0:
-        joined_at = f'That\'s {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
-    else:
-        joined_at = f'That\'s {tdelta.days} days, {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
-    if len([role.mention for role in member.roles[1:]]) == 0:
-        roles = 'None'
-    else:
-        roles = '\n'.join([role.mention for role in member.roles[1:]])
-    #embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
-    embed = discord.Embed(title=f'Member Info for {member}')
-    embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
-                    value=joined_at)
-    embed.add_field(name="Roles", value=roles, inline=False)
-    embed.set_author(name=member.display_name, icon_url=member.avatar)
-    await interaction.response.send_message(embed=embed)
+    try:
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+        tdelta = now - member.joined_at
+        if tdelta.days == 0:
+            joined_at = f'That\'s {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+        else:
+            joined_at = f'That\'s {tdelta.days} days, {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+        if len([role.mention for role in member.roles[1:]]) == 0:
+            roles = 'None'
+        else:
+            roles = '\n'.join([role.mention for role in member.roles[1:]])
+        embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
+        #embed = discord.Embed(title=f'Member Info for {member}')
+        embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
+                        value=joined_at)
+        embed.add_field(name="Roles", value=roles, inline=False)
+        embed.set_author(name=member.display_name, icon_url=member.avatar)
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -632,30 +634,35 @@ movie_worksheet = gc.open('Beyplex').get_worksheet(0)
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def movie(interaction: discord.Interaction):
-    """Get a random movie from Beyplex"""
+    try:
+        """Get a random movie from Beyplex"""
 
-    movie_list_length = range(len(movie_worksheet.col_values(1)))
-    movie_index_pick = random.choice(movie_list_length)
-    movie_data = movie_worksheet.row_values(movie_index_pick)
-    movie_name = movie_data[0]
-    movie_rating = movie_data[1]
-    movie_release = movie_data[2]
-    movie_description = movie_data[3]
-    movie_tagline = movie_data[4]
-    movie_audience_rating = movie_data[5]
-    movie_duration = movie_data[6]
-    movie_genres = movie_data[7]
-    movie_actors = movie_data[8]
+        movie_list_length = range(len(movie_worksheet.col_values(1)))
+        movie_index_pick = random.choice(movie_list_length)
+        movie_data = movie_worksheet.row_values(movie_index_pick)
+        movie_name = movie_data[0]
+        movie_rating = movie_data[1]
+        movie_release = movie_data[2]
+        movie_description = movie_data[3]
+        movie_tagline = movie_data[4]
+        movie_audience_rating = movie_data[5]
+        movie_duration = movie_data[6]
+        movie_genres = movie_data[7]
+        movie_actors = movie_data[8]
 
-    embed = discord.Embed(title=f'{movie_name} ({movie_rating})\nRuntime: {movie_duration}', description=movie_tagline, color=0x00ff00)
-    embed.add_field(name='Description', value=movie_description, inline=False)
-    embed.add_field(name='Genres', value=movie_genres, inline=False)
-    embed.add_field(name='Actors', value=movie_actors, inline=False)
-    embed.add_field(name='Audience Rating', value=movie_audience_rating, inline=True)
-    embed.add_field(name='Release Date', value=movie_release, inline=True)
-    embed.set_footer(text=f'Movie {movie_index_pick} of {len(movie_worksheet.col_values(1))}')
+        embed = discord.Embed(title=f'{movie_name} ({movie_rating})\nRuntime: {movie_duration}', description=movie_tagline, color=0x00ff00)
+        embed.add_field(name='Description', value=movie_description, inline=False)
+        embed.add_field(name='Genres', value=movie_genres, inline=False)
+        embed.add_field(name='Actors', value=movie_actors, inline=False)
+        embed.add_field(name='Audience Rating', value=movie_audience_rating, inline=True)
+        embed.add_field(name='Release Date', value=movie_release, inline=True)
+        embed.set_footer(text=f'Movie {movie_index_pick} of {len(movie_worksheet.col_values(1))}')
 
-    await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        await interaction.response.send_message("Something went wrong. Sorry :(")
+
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -663,56 +670,64 @@ async def token(interaction: discord.Interaction):
     """
     Returns an embed with the current WoW token price in gold
     """
-    token_object = api_client.wow.game_data.get_token_index("us", "en_US")
-    print(token_object)
+    try:
+        token_object = api_client.wow.game_data.get_token_index("us", "en_US")
+        print(token_object)
 
-    embed = discord.Embed(title='WoW Token')
-    embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
-    embed.set_thumbnail(
-        url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
-            'finishedsmall.png')
-    await interaction.response.send_message(embed=embed)
+        embed = discord.Embed(title='WoW Token')
+        embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
+        embed.set_thumbnail(
+            url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
+                'finishedsmall.png')
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        await interaction.response.send_message("Something went wrong. Please try again later.")
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def status(interaction: discord.Interaction):
     """Status of the Arygos server"""
 
-    server_object = api_client.wow.game_data.get_connected_realm("us", "en_US", 99)
+    try:
+        server_object = api_client.wow.game_data.get_connected_realm("us", "en_US", 99)
 
-    @dataclass
-    class Server:
-        status: str = server_object['status']['name']
-        population: str = server_object['population']['name']
-        has_queue: bool = server_object['has_queue']
-        region: str = server_object['realms'][0]['region']['name']
-        country: str = server_object['realms'][0]['category']
-        timezone: str = server_object['realms'][0]['timezone']
-        connections: list = field(default_factory=lambda: [server_object['realms'][x]['name'] for x in
-                                                           range(len(server_object['realms']))])
-        name: str = 'Arygos'
+        @dataclass
+        class Server:
+            status: str = server_object['status']['name']
+            population: str = server_object['population']['name']
+            has_queue: bool = server_object['has_queue']
+            region: str = server_object['realms'][0]['region']['name']
+            country: str = server_object['realms'][0]['category']
+            timezone: str = server_object['realms'][0]['timezone']
+            connections: list = field(default_factory=lambda: [server_object['realms'][x]['name'] for x in
+                                                               range(len(server_object['realms']))])
+            name: str = 'Arygos'
 
-    server = Server()
+        server = Server()
 
-    if server.status == "Up":
-        status_color = 0x00ff00  # Green for up
-    else:
-        status_color = 0xff0000  # Red for down
+        if server.status == "Up":
+            status_color = 0x00ff00  # Green for up
+        else:
+            status_color = 0xff0000  # Red for down
 
-    server_string = ', '.join(str(name) for name in server.connections)
+        server_string = ', '.join(str(name) for name in server.connections)
 
-    embed = discord.Embed(title='Arygos', color=status_color)
-    embed.add_field(name='Current Status', value=f'Server is currently {server.status}', inline=True)
-    if server.population == 'Offline':
-        embed.add_field(name='Current Population', value=f'This server is currently {server.population}')
-    else:
-        embed.add_field(name='Current Population', value=f'This is a {server.population} pop server', inline=True)
-    embed.add_field(name='Connected Realms', value=server_string, inline=False)
-    if server.has_queue:
-        embed.add_field(name='Queue Active', value='Server has a login queue')
-    embed.add_field(name="Timezone", value=server.timezone, inline=True)
-    embed.set_thumbnail(url=might_logo)
-    await interaction.response.send_message(embed=embed)
+        embed = discord.Embed(title='Arygos', color=status_color)
+        embed.add_field(name='Current Status', value=f'Server is currently {server.status}', inline=True)
+        if server.population == 'Offline':
+            embed.add_field(name='Current Population', value=f'This server is currently {server.population}')
+        else:
+            embed.add_field(name='Current Population', value=f'This is a {server.population} pop server', inline=True)
+        embed.add_field(name='Connected Realms', value=server_string, inline=False)
+        if server.has_queue:
+            embed.add_field(name='Queue Active', value='Server has a login queue')
+        embed.add_field(name="Timezone", value=server.timezone, inline=True)
+        embed.set_thumbnail(url=might_logo)
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        await interaction.response.send_message("Something went wrong. Please try again later.")
 
 raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @client.tree.command(description="Checks a user's character for raid readiness")
