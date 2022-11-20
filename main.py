@@ -548,6 +548,12 @@ async def cheers(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def dontdothat(interaction: discord.Interaction):
+    """Don't do that"""
+    await interaction.response.send_message("https://imgur.com/a/xEKQA8H")
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wow(interaction: discord.Interaction):
     """Wow"""
     response = requests.get(wow_url)
