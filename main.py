@@ -4,6 +4,7 @@ import asyncio
 import datetime
 import logging.handlers
 import bot_secrets
+import bot_config
 import gspread
 import random
 import requests
@@ -30,87 +31,16 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-MY_GUILD = discord.Object(id=bot_secrets.GUILD_ID)
+MY_GUILD = discord.Object(id=bot_config.GUILD_ID)
 might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
 error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png'
 wow_url = "https://owen-wilson-wow-api.herokuapp.com/wows/random"
 
 
-kat_gif_list = [
-    "https://tenor.com/view/eye-squint-markiplier-glare-suspicious-gif-15742154",
-    "https://tenor.com/view/really-what-squint-chicken-gif-15168180",
-    "https://tenor.com/view/skeptical-futurama-fry-hmmm-i-got-my-eyes-on-you-gif-17101711",
-    "https://tenor.com/view/buffy-the-vampire-slayer-eye-gif-26036478",
-    "https://tenor.com/view/dog-suspicious-suspicious-dog-squinting-squint-chihuahua-squint-gif-26088382",
-    "https://tenor.com/view/pusheen-pusheen-cat-cat-cartoon-cute-gif-25196813"
-]
+kat_gif_list = bot_config.kat_gif_list
 
-wow_spec_dict = {
-    "Death Knight" : {
-        "a Blood" : [0xC41E3A, 'Tank', 'A dark guardian who manipulates and corrupts life energy to sustain <him/her>self in the face of an enemy onslaught.', 'Spell_deathknight_bloodpresence.png'],
-        "a Frost" : [0xC41E3A, 'Melee DPS', 'An icy harbinger of doom, channeling runic power and delivering vicious weapon strikes.', 'Spell_deathknight_frostpresence.png'],
-        "an Unholy" : [0xC41E3A, 'Melee DPS', 'A master of death and decay, spreading infection and controlling undead minions to do <his/her> bidding.', 'Spell_deathknight_unholypresence.png']
-    },
-    "Demon Hunter" : {
-        "a Vengeance": [0xA330C9, 'Tank', 'Embraces the demon within to incinerate enemies and protect their allies.', 'Demon_hunter_vengeance_icon.png'],
-        "a Havoc" : [0xA330C9, 'Melee DPS', 'A brooding master of warglaives and the destructive power of fel magic.', 'Demon_hunter_havoc_icon.png']
-    },
-    "Druid" : {
-        "a Guardian" : [0xFF7C0A, 'Tank', 'Takes on the form of a mighty bear to absorb damage and protect allies.', 'Ability_racial_bearform.png'],
-        "a Feral" : [0xFF7C0A, 'Melee DPS', 'Takes on the form of a great cat to deal damage with bleeds and bites.', 'Ability_druid_catform.png'],
-        "a Balance" : [0xFF7C0A, 'Ranged DPS', 'Can take on the form of a powerful Moonkin, balancing the power of Arcane and Nature magic to destroy enemies at a distance.', 'Spell_nature_starfall.png'],
-        "a Restoration" : [0xFF7C0A, 'Healer', 'Uses heal-over-time Nature spells to keep allies alive.', 'Spell_nature_healingtouch.png']
-    },
-    "Evoker" : {
-        "a Devastation" : [0x33937F, 'Ranged DPS', 'A ranged DPS specialization that mainly focuses on the magic of the red and blue dragonflights to harm foes from a distance with a variety of concentrated spells and powerful breath attacks.', 'https://upload.wikimedia.org/wikipedia/en/5/53/Spyro.png'],
-        "a Preservation" : [0x33937F, 'Healer', 'A healer specialization that largely utilizes the magic of the green and bronze dragonflights to heal allies with breaths and even rewind time on wounds themselves!', 'https://upload.wikimedia.org/wikipedia/en/5/53/Spyro.png'],
-    },
-    "Hunter" : {
-        "a Beast Mastery" : [0xAAD372, 'Ranged DPS', 'A master of the wild who can tame a wide variety of beasts to assist <him/her> in combat.', 'Ability_hunter_bestialdiscipline.png'],
-        "a Marksmanship" : [0xAAD372, 'Ranged DPS', 'A master archer or sharpshooter who excels in bringing down enemies from afar.', 'Ability_hunter_focusedaim.png'],
-        "a Survival" : [0xAAD372, 'Melee DPS', 'A rugged tracker who favors using animal venom, explosives and traps as deadly weapons.', 'Ability_hunter_camouflage.png']
-    },
-    "Mage" : {
-        "an Arcane" : [0x3FC7EB, 'Ranged DPS', 'Manipulates the arcane, destroying enemies with overwhelming power.', 'Spell_holy_magicalsentry.png'],
-        "a Fire" : [0x3FC7EB, 'Ranged DPS', 'Ignites enemies with balls of fire and combustive flames.', 'Spell_fire_firebolt02.png'],
-        "a Frost" : [0x3FC7EB, 'Ranged DPS', 'Freezes enemies in their tracks and shatters them with Frost magic.', 'Spell_frost_frostbolt02.png']
-    },
-    "Monk" : {
-        "a Brewmaster" : [0x00FF98, 'Tank', 'A sturdy brawler who uses liquid fortification and unpredictable movement to avoid damage and protect allies.', 'Spell_monk_brewmaster_spec.png'],
-        "a Windwalker" : [0x00FF98, 'Melee DPS', 'A martial artist without peer who pummels foes with hands and fists.', 'Spell_monk_windwalker_spec.png'],
-        "a Mistweaver" : [0x00FF98, 'Healer', 'A healer who mixes traditional herbal medicine with Pandaren martial arts.', 'Spell_monk_mistweaver_spec.png']
-    },
-    "Paladin" : {
-        "a Protection" : [0xF48CBA, 'Tank', 'Uses Holy magic to shield <himself/herself> and defend allies from attackers.', 'Ability_paladin_shieldofthetemplar.png'],
-        "a Holy" : [0xF48CBA, 'Healer', 'Invokes the power of the Light to protect and to heal.', 'Spell_holy_holybolt.png'],
-        "a Retribution" : [0xF48CBA, 'Melee DPS', 'A righteous crusader who judges and punishes opponents with weapons and Holy magic.', 'Spell_holy_auraoflight.png']
-    },
-    "Priest" : {
-        "a Shadow" : [0xFFFFFF, 'Ranged DPS', 'Uses sinister Shadow magic, especially damage-over-time spells, to eradicate enemies.', 'Spell_shadow_shadowwordpain.png'],
-        "a Discipline" : [0xFFFFFF, 'Healer', 'Uses magic to shield allies from taking damage as well as heal their wounds.', 'Spell_holy_powerwordshield.png'],
-        "a Holy" : [0xFFFFFF, 'Healer', 'A versatile healer who can reverse damage on individuals or groups and even heal from beyond the grave.', 'Spell_holy_guardianspirit.png']
-    },
-    "Rogue" : {
-        "an Assassination" : [0xFFF468, 'Melee DPS', 'A deadly master of poisons who dispatches victims with vicious dagger strikes.', 'Ability_rogue_eviscerate.png'],
-        "an Outlaw" : [0xFFF468, 'Melee DPS', 'A swashbuckler who uses agility and guile to stand toe-to-toe with enemies.', 'Inv_sword_30.png'],
-        "a Subtlety" : [0xFFF468, 'Melee DPS', 'A dark stalker who leaps from the shadows to ambush <his/her> unsuspecting prey.', 'Ability_stealth.png']
-    },
-    "Shaman" : {
-        "an Elemental" : [0x0070DD, 'Ranged DPS', 'A spellcaster who harnesses the destructive forces of nature and the elements.', 'Spell_nature_lightning.png'],
-        "an Enhancement" : [0x0070DD, 'Melee DPS', 'A totemic warrior who strikes foes with weapons imbued with elemental power.', 'Spell_shaman_improvedstormstrike.png'],
-        "a Restoration" : [0x0070DD, 'Healer', 'A healer who calls upon ancestral spirits and the cleansing power of water to mend allies\' wounds.', 'Spell_nature_magicimmunity.png']
-    },
-    "Warlock" : {
-        "an Affliction" : [0x8788EE, 'Ranged DPS', 'A master of Shadow magic who specializes in drains and damage-over-time spells.', 'Spell_shadow_deathcoil.png'],
-        "a Demonology" : [0x8788EE, 'Ranged DPS', 'A master of demonic magic who transforms into a demon and compels demonic powers to aid him.', 'Spell_shadow_metamorphosis.png'],
-        "a Destruction" : [0x8788EE, 'Ranged DPS', 'A master of chaos who calls down fire to burn and demolish enemies.', 'Spell_shadow_rainoffire.png']
-    },
-    "Warrior" : {
-        "a Protection" : [0xC69B6D, 'Tank', 'A stalwart protector who uses a shield to safeguard <himself/herself> and <his/her> allies.', 'Ability_warrior_defensivestance.png'],
-        "an Arms" : [0xC69B6D, 'Melee DPS', 'A battle-hardened master of two-handed weapons, using mobility and overpowering attacks to strike <his/her> opponents down.', 'Ability_warrior_savageblow.png'],
-        "a Fury" : [0xC69B6D, 'Melee DPS', 'A furious berserker wielding a weapon in each hand, unleashing a flurry of attacks to carve <his/her> opponents to pieces.', 'Ability_warrior_innerrage.png']
-    }
-}
+enchant_map = bot_config.enchant_map
+wow_spec_dict = bot_config.wow_spec_dict
 
 #YouTube API
 yt = YouTubeDataAPI(bot_secrets.YT_DATA_API)
@@ -123,15 +53,15 @@ class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
-        self.overwatch_role = bot_secrets.overwatch_role
-        self.movie_role = bot_secrets.movie_role
-        self.m_plus_role = bot_secrets.m_plus_role
-        self.pvp_role = bot_secrets.pvp_role
-        self.colorado_role = bot_secrets.colorado_role
-        self.mightcon_role = bot_secrets.mightcon_role
-        self.ready_to_raid_role = bot_secrets.ready_to_raid_role
-        self.guild_member_role = bot_secrets.guild_member_role
-        self.raid_friends_role = bot_secrets.raid_friends_role
+        self.overwatch_role = bot_config.overwatch_role
+        self.movie_role = bot_config.movie_role
+        self.m_plus_role = bot_config.m_plus_role
+        self.pvp_role = bot_config.pvp_role
+        self.colorado_role = bot_config.colorado_role
+        self.mightcon_role = bot_config.mightcon_role
+        self.ready_to_raid_role = bot_config.ready_to_raid_role
+        self.guild_member_role = bot_config.guild_member_role
+        self.raid_friends_role = bot_config.raid_friends_role
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -149,7 +79,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label = "Overwatch", style=discord.ButtonStyle.green, custom_id="overwatch", emoji="🔫")
     async def overwatch(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.overwatch_role) is not discord.Role:
-            client.overwatch_role = interaction.guild.get_role(bot_secrets.overwatch_role)
+            client.overwatch_role = interaction.guild.get_role(bot_config.overwatch_role)
         if client.overwatch_role not in interaction.user.roles:
             await interaction.user.add_roles(client.overwatch_role)
             button.label = "Remove Overwatch Role"
@@ -164,7 +94,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label = "WoW M+", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
     async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.m_plus_role) is not discord.Role:
-            client.m_plus_role = interaction.guild.get_role(bot_secrets.m_plus_role)
+            client.m_plus_role = interaction.guild.get_role(bot_config.m_plus_role)
         if client.m_plus_role not in interaction.user.roles:
             await interaction.user.add_roles(client.m_plus_role)
             button.label = "Remove M+ Role"
@@ -179,7 +109,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label = "WoW PvP", style=discord.ButtonStyle.green, custom_id="wow_pvp", emoji="🪓")
     async def wow_pvp(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.pvp_role) is not discord.Role:
-            client.pvp_role = interaction.guild.get_role(bot_secrets.pvp_role)
+            client.pvp_role = interaction.guild.get_role(bot_config.pvp_role)
         if client.pvp_role not in interaction.user.roles:
             await interaction.user.add_roles(client.pvp_role)
             button.label = "Remove PvP Role"
@@ -194,7 +124,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label = "Movie Night", style=discord.ButtonStyle.green, custom_id="movie_night", emoji="🍿")
     async def movie_night(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.movie_role) is not discord.Role:
-            client.movie_role = interaction.guild.get_role(bot_secrets.movie_role)
+            client.movie_role = interaction.guild.get_role(bot_config.movie_role)
         if client.movie_role not in interaction.user.roles:
             await interaction.user.add_roles(client.movie_role)
             button.label = "Remove Movie Night Role"
@@ -209,7 +139,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label="Mightcon Vegas", style=discord.ButtonStyle.green, custom_id="mightcon_vegas", emoji="🎰")
     async def mightcon(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.mightcon_role) is not discord.Role:
-            client.mightcon_role = interaction.guild.get_role(bot_secrets.mightcon_role)
+            client.mightcon_role = interaction.guild.get_role(bot_config.mightcon_role)
         if client.mightcon_role not in interaction.user.roles:
             await interaction.user.add_roles(client.mightcon_role)
             button.label = "Remove Mightcon Vegas Role"
@@ -226,7 +156,7 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(label="Colorado Peeps", style=discord.ButtonStyle.green, custom_id="colorado", emoji="🏔")
     async def colorado(self, interaction: discord.Interaction, button: discord.ui.Button):
         if type(client.colorado_role) is not discord.Role:
-            client.colorado_role = interaction.guild.get_role(bot_secrets.colorado_role)
+            client.colorado_role = interaction.guild.get_role(bot_config.colorado_role)
         if client.colorado_role not in interaction.user.roles:
             await interaction.user.add_roles(client.colorado_role)
             button.label = "Remove Colorado Peeps Role"
@@ -737,7 +667,7 @@ async def status(interaction: discord.Interaction):
 
 raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @client.tree.command(description="Checks a user's character for raid readiness")
-@discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader")
+@discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader", "Guild Member")
 @app_commands.describe(character_name='character name')
 @app_commands.describe(character_server='server name')
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -746,144 +676,110 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     Returns an embed with the specified character's R2R status
     """
 
-    min_ilvl: int = int(worksheet.col_values(1)[0])
-    bracer_enchants_list: list = raid_worksheet.col_values(2)[1:]
-    weapon_enchants_list: list = raid_worksheet.col_values(3)[1:]
-    chest_enchants_list: list = raid_worksheet.col_values(4)[1:]
-    ring_enchants_list: list = raid_worksheet.col_values(5)[1:]
-    cloak_enchants_list: list = raid_worksheet.col_values(6)[1:]
-    boots_enchants_list: list = raid_worksheet.col_values(7)[1:]
+    try:
+        min_ilvl: int = int(raid_worksheet.col_values(1)[0])
+        enchants_list: list = raid_worksheet.col_values(8)[1:]
+    except:
+        logging.error("Exception occurred", exc_info=True)
+        await interaction.response.send_message("Something went wrong getting raid ready info from Google Sheets. Please try again later.")
 
     embed = discord.Embed(title=f'Fetching {character_name.title()}-{character_server.title()}\'s Armory Data...')
     await interaction.response.send_message(embed=embed, ephemeral=True)
-    await asyncio.sleep(1)
     server_slug = character_server.lower().replace("'", "").replace(" ", "")
-    character_profile = api_client.wow.profile.get_character_profile_summary("us", "en_US", server_slug,
-                                                                                 character_name.lower())
-    character_equipment = api_client.wow.profile.get_character_equipment_summary("us", "en_US", server_slug,
-                                                                                        character_name.lower())
-    embed2 = discord.Embed(title='Parsing API Response')
-    await interaction.edit_original_response(embed=embed2)
-    await asyncio.sleep(.5)
 
-    character_name = character_profile['name']
-    character_level = character_profile['level']
-    character_spec = character_profile['active_spec']['name']
-    character_ilvl_avg = float(character_profile['average_item_level'])
-    character_class = character_profile['character_class']['name']
-    character_last_login = character_profile['last_login_timestamp']
+    try:
+        character_equipment_unloaded = requests.get(f"https://raider.io/api/v1/characters/profile?region=us&realm={server_slug}&name={character_name}&fields=gear").content
+        character_equipment = json.loads(character_equipment_unloaded)
+    except:
+        logging.error("Exception occurred", exc_info=True)
+        await interaction.response.send_message("Something went wrong getting data from Raider.io. Please try again later.")
 
-    for item in character_equipment['equipped_items']:
-        if item['slot']['type'] == 'WRIST':
-            bracer_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'MAIN_HAND':
-            weapon_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'CHEST':
-            chest_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'FINGER_1':
-            ring1_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'FINGER_2':
-            ring2_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'BACK':
-            cloak_enchant = item['enchantments'][0]['source_item']['name']
-        if item['slot']['type'] == 'FEET':
-            boots_enchant = item['enchantments'][0]['source_item']['name']
+    character_name: str = character_equipment['name']
+    character_race: str = character_equipment['race']
+    character_class: str = character_equipment['class']
+    character_class_color = bot_config.wow_class_color_dict[character_class]
+    character_spec: str = character_equipment['active_spec_name']
+    character_ilvl: int = character_equipment['gear']['item_level_equipped']
+    thumbnail = character_equipment['thumbnail_url']
 
-    embed3 = discord.Embed(title='Building Ready to Raid Table')
-    await interaction.edit_original_response(embed=embed3)
-    await asyncio.sleep(.5)
+    embed = discord.Embed(title='Parsing API Response')
+    await interaction.edit_original_response(embed=embed)
 
-    embed4 = discord.Embed(title='Ready to Raid',
-                           description=f'{character_name}, level {character_level} {character_spec} {character_class}')
+    enchanted_list: list = []
+    for slot in character_equipment['gear']['items']:
+        if "enchant" in character_equipment['gear']['items'][slot]:
+            if slot == "waist":
+                pass
+            else:
+                enchanted_list.append(slot)
+
+    embed = discord.Embed(title='Parsing API Response.')
+    await interaction.edit_original_response(embed=embed)
+
+    embed = discord.Embed(title='Parsing API Response..')
+    await interaction.edit_original_response(embed=embed)
+
+    embed = discord.Embed(title='Parsing API Response...')
+    await interaction.edit_original_response(embed=embed)
+
+    embed = discord.Embed(title='Parsing API Response...done')
+    await interaction.edit_original_response(embed=embed)
+
+    embed = discord.Embed(title='Building Ready to Raid Table')
+    await interaction.edit_original_response(embed=embed)
+
+    embed = discord.Embed(
+        description=f'{character_name}, {character_spec} {character_class}\n'
+                    f'https://worldofwarcraft.com/en-us/character/us/{server_slug}/{character_name}',
+        title='Ready to Raid Checker',
+        url="https://docs.google.com/spreadsheets/d/1l_-cLmY7-kXp1OncDSk8wjgQWb5aT1WxJGLEU5_TQCM/edit?usp=sharing",
+        color=character_class_color
+    )
 
     checkmark = '✅'
     xmark = '❌'
+    ready_mark = ''
 
-    # Check character ilvl average against R2R minimum
-    if character_ilvl_avg >= min_ilvl:
-        ilvl_check = True
-        embed4.add_field(name='Item Level', value=f'{checkmark} {character_ilvl_avg}', inline=False)
-    if character_ilvl_avg < min_ilvl:
-        ilvl_check = False
-        embed4.add_field(name='Item Level', value=f'{xmark} {character_ilvl_avg}', inline=False)
+    embed.add_field(
+        name='Check for these enchanted slots:',
+        value='Back, Chest, Wrist, Feet, Finger1, Finger2, Mainhand, Offhand (if applicable)',
+        inline=False
+    )
 
-    embed4.add_field(name='Enchants', value="------------------------------------", inline=False)
-
-    # Check weapon enchant against R2R list
-    if weapon_enchant in weapon_enchants_list:
-        weapon_check = True
-        embed4.add_field(name='Weapon', value=f'{checkmark} {weapon_enchant}', inline=False)
+    if character_ilvl >= min_ilvl:
+        ready_mark = checkmark
     else:
-        weapon_check = False
-        embed4.add_field(name='Item Level', value=f'{xmark} {weapon_enchant}', inline=False)
+        ready_mark = xmark
 
-    # Check cloak enchant against R2R list
-    if cloak_enchant in cloak_enchants_list:
-        cloak_check = True
-        embed4.add_field(name='Cloak', value=f'{checkmark} {cloak_enchant}', inline=False)
-    else:
-        cloak_check = False
-        embed4.add_field(name='Cloak', value=f'{xmark} {cloak_enchant}', inline=False)
+    embed.add_field(name='Item Level Equipped', value=f'{ready_mark} {character_ilvl}', inline=True)
 
-    # Check chest enchant against R2R list
-    if chest_enchant in chest_enchants_list:
-        chest_check = True
-        embed4.add_field(name='Chest', value=f'{checkmark} {chest_enchant}', inline=False)
-    else:
-        chest_check = False
-        embed4.add_field(name='Chest', value=f'{xmark} {chest_enchant}', inline=False)
+    expected_slots = ['back', 'chest', 'wrist', 'feet', 'finger1', 'finger2', 'mainHand', 'offHand (if applicable)']
 
-    # Check boots enchant against R2R list
-    if boots_enchant in boots_enchants_list:
-        boots_check = True
-        embed4.add_field(name='Boots', value=f'{checkmark} {boots_enchant}', inline=False)
-    else:
-        boots_check = False
-        embed4.add_field(name='Boots', value=f'{xmark} {boots_enchant}', inline=False)
+    for gearslot in enchanted_list:
+        try:
+            if enchant_map[character_equipment['gear']['items'][gearslot]['enchant']] in enchants_list:
+                ready_mark = checkmark
+            else:
+                ready_mark = xmark
+            embed.add_field(
+                name=gearslot.capitalize(),
+                value=f"{ready_mark} {enchant_map[character_equipment['gear']['items'][gearslot]['enchant']]}",
+                inline=False
+            )
+        except:
+            embed.add_field(
+                name=gearslot.capitalize(),
+                value=f"{xmark} Non-Dragonflight Enchant. Check armory or add it to the list of accepted enchants",
+                inline=False
+            )
 
-    # Check ring 1 enchant against R2R list
-    if ring1_enchant in ring_enchants_list:
-        ring1_check = True
-        embed4.add_field(name='Ring 1', value=f'{checkmark} {ring1_enchant}', inline=True)
-    else:
-        ring1_check = False
-        embed4.add_field(name='Ring 1', value=f'{xmark} {ring1_enchant}', inline=True)
+    unenchanted_slots = [x for x in expected_slots if x not in enchanted_list]
+    unenchanted_slots_string = ', '.join(unenchanted_slots)
 
-    # Check ring 2 enchant against R2R list
-    if ring2_enchant in ring_enchants_list:
-        ring2_check = True
-        embed4.add_field(name='Ring 2', value=f'{checkmark} {ring2_enchant}', inline=True)
-    else:
-        ring2_check = False
-        embed4.add_field(name='Ring 2', value=f'{xmark} {ring2_enchant}', inline=True)
+    embed.set_footer(text=f'Unenchanted Slots: {unenchanted_slots_string}')
 
-    # Check bracer enchant against R2R list
-    if bracer_enchant in bracer_enchants_list:
-        bracer_check = True
-        embed4.add_field(name='Bracers', value=f'{checkmark} {bracer_enchant}', inline=False)
-    else:
-        bracer_check = False
-        embed4.add_field(name='Bracers', value=f'{xmark} {bracer_enchant}', inline=False)
-
-    # Check booleans from previous checks to determine ready to raid status
-    if ilvl_check and weapon_check and cloak_check and chest_check and boots_check and ring1_check and ring2_check and bracer_check:
-        r2r_check = True
-        embed4.add_field(name='Ready to Raid', value=f'{checkmark} Ready to Raid', inline=False)
-    else:
-        r2r_check = False
-        embed4.add_field(name='Ready to Raid', value=f'{xmark} Not Ready to Raid', inline=False)
-
-    if r2r_check == True:
-        r2r_color = 0x00ff00  # Green for up
-    else:
-        r2r_color = 0xff0000  # Red for down
-
-    datetime_last_login = datetime.datetime.fromtimestamp(character_last_login / 1000)
-    embed4.set_footer(text=f'Last login: {datetime_last_login}')
-    embed4.color = r2r_color
-    embed4.set_thumbnail(url=might_logo)
-
-    await interaction.edit_original_response(embed=embed4)
+    embed.set_thumbnail(url=thumbnail)
+    await interaction.edit_original_response(embed=embed)
 
 
 # Get the names of all the commands in this file to make a help command
