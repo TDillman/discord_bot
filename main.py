@@ -168,13 +168,11 @@ class RoleSelectView(discord.ui.View):
             button.style = discord.ButtonStyle.green
             await interaction.response.edit_message(view=self)
 
-
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game('with fire. Type /help!'))
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
-
 
 @client.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
@@ -193,7 +191,6 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
         embed.set_thumbnail(url=error_icon_url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 @client.tree.command()
 @discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader")
 async def role_select(interaction: discord.Interaction):
@@ -202,7 +199,6 @@ async def role_select(interaction: discord.Interaction):
                     value=f"Click the button you'd like to get pings for! Click it again to remove the role.")
     embed.set_thumbnail(url=might_logo)
     await interaction.response.send_message(embed=embed, view = RoleSelectView())
-
 
 @client.tree.command()
 async def hello(interaction: discord.Interaction):
@@ -670,7 +666,6 @@ raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader", "Guild Member")
 @app_commands.describe(character_name='character name')
 @app_commands.describe(character_server='server name')
-@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def r2r(interaction: discord.Interaction, character_name: str, character_server: str):
     """
     Returns an embed with the specified character's R2R status
@@ -690,9 +685,9 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     try:
         character_equipment_unloaded = requests.get(f"https://raider.io/api/v1/characters/profile?region=us&realm={server_slug}&name={character_name}&fields=gear").content
         character_equipment = json.loads(character_equipment_unloaded)
-    except:
+    except HTTPError as e:
         logging.error("Exception occurred", exc_info=True)
-        await interaction.response.send_message("Something went wrong getting data from Raider.io. Please try again later.")
+        await interaction.edit_original_response(embed=discord.Embed(title=f'Error: {e}'))
 
     character_name: str = character_equipment['name']
     character_race: str = character_equipment['race']
@@ -753,7 +748,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     embed.add_field(name='Item Level Equipped', value=f'{ready_mark} {character_ilvl}', inline=True)
 
-    expected_slots = ['back', 'chest', 'wrist', 'feet', 'finger1', 'finger2', 'mainHand', 'offHand (if applicable)']
+    expected_slots = ['back', 'chest', 'wrist', 'feet', 'finger1', 'finger2', 'mainhand', 'offhand']
 
     for gearslot in enchanted_list:
         try:
@@ -788,7 +783,6 @@ command_list.sort()
 middle_index = len(command_list)//2
 help_string1: str = f'\n'.join(str(name) for name in command_list[:middle_index])
 help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:])
-
 
 @client.tree.command()
 async def help(interaction: discord.Interaction) -> str:
