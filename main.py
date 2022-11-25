@@ -212,6 +212,7 @@ async def send(interaction: discord.Interaction, text_to_send: str):
     """Sends the text into the current channel."""
     await interaction.response.send_message(text_to_send)
 
+
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Member Info')
 async def show_member_info(interaction: discord.Interaction, member: discord.Member):
