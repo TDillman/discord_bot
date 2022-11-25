@@ -12,6 +12,7 @@ import json
 import os
 
 from discord import app_commands, ui
+from discord.ui import Button, View
 from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
 from dataclasses import dataclass, field
@@ -480,6 +481,12 @@ async def dontdothat(interaction: discord.Interaction):
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
+async def specimen(interaction: discord.Interaction):
+    """Nope"""
+    await interaction.response.send_message("https://tenor.com/view/run-running-rumning-away-gif-26050933")
+
+@client.tree.command()
+@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wow(interaction: discord.Interaction):
     """Wow"""
     response = requests.get(wow_url)
@@ -700,6 +707,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     embed = discord.Embed(title='Parsing API Response')
     await interaction.edit_original_response(embed=embed)
 
+
     enchanted_list: list = []
     for slot in character_equipment['gear']['items']:
         if "enchant" in character_equipment['gear']['items'][slot]:
@@ -777,6 +785,8 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     embed.set_footer(text=f'Unenchanted Slots: {unenchanted_slots_string}')
 
     embed.set_thumbnail(url=thumbnail)
+
+
     await interaction.edit_original_response(embed=embed)
 
 
