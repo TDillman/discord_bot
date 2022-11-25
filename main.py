@@ -666,7 +666,7 @@ raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader", "Guild Member")
 @app_commands.describe(character_name='character name')
 @app_commands.describe(character_server='server name')
-async def r2r(interaction: discord.Interaction, character_name: str, character_server: str):
+async def r2r(interaction: discord.Interaction, character_name: str, character_server: str = "Arygos"):
     """
     Returns an embed with the specified character's R2R status
     """
@@ -725,7 +725,10 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     embed = discord.Embed(
         description=f'{character_name}, {character_spec} {character_class}\n'
-                    f'https://worldofwarcraft.com/en-us/character/us/{server_slug}/{character_name}',
+                    f'[Armory](https://worldofwarcraft.com/en-us/character/us/{server_slug}/{character_name}) | '
+                    f'[Raider.io](https://raider.io/characters/us/{server_slug}/{character_name}) | '
+                    f'[Warcraft Logs](https://www.warcraftlogs.com/character/us/{server_slug}/{character_name}) | '
+                    f'[Raidbots](https://www.raidbots.com/simbot/quick?region=us&realm={server_slug}&name={character_name})',
         title='Ready to Raid Checker',
         url="https://docs.google.com/spreadsheets/d/1l_-cLmY7-kXp1OncDSk8wjgQWb5aT1WxJGLEU5_TQCM/edit?usp=sharing",
         color=character_class_color
