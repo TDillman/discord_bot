@@ -37,7 +37,6 @@ might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/67982328
 error_icon_url = 'https://cdn0.iconfinder.com/data/icons/shift-interfaces/32/Error-512.png'
 wow_url = "https://owen-wilson-wow-api.herokuapp.com/wows/random"
 
-
 kat_gif_list = bot_config.kat_gif_list
 
 enchant_map = bot_config.enchant_map
@@ -68,7 +67,6 @@ class MyClient(discord.Client):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
         self.add_view(RoleSelectView())
-
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
@@ -568,7 +566,6 @@ async def pick(interaction: discord.Interaction):
 
     await interaction.response.send_message(file=file, embed=embed)
 
-
 movie_worksheet = gc.open('Beyplex').get_worksheet(0)
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
@@ -601,7 +598,6 @@ async def movie(interaction: discord.Interaction):
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
         await interaction.response.send_message("Something went wrong. Sorry :(")
-
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
