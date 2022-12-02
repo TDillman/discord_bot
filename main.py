@@ -50,7 +50,7 @@ api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SE
 gc = gspread.service_account()
 
 class MyClient(discord.Client):
-    def __init__(self, *, intents: discord.Intents):
+    def __init__(self, *, intents: discord.Intents.all()):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
         self.overwatch_role = bot_config.overwatch_role
@@ -227,8 +227,11 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
             roles = 'None'
         else:
             roles = '\n'.join([role.mention for role in member.roles[1:]])
+
+        print(discord.utils.get(member.activities, type=discord.ActivityType.custom))
+
         embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
-        #embed = discord.Embed(title=f'Member Info for {member}')
+        #embed.add_field(name='Activity', value=f'{activity}', inline=False)
         embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
                         value=joined_at)
         embed.add_field(name="Roles", value=roles, inline=False)
@@ -745,7 +748,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     embed.add_field(
         name='Check for these enchanted slots:',
-        value='Back, Chest, Wrist, Feet, Finger1, Finger2, Mainhand, Offhand (if applicable)',
+        value='Back, Chest, Wrist, Legs, Feet, Finger1, Finger2, Mainhand, Offhand (if applicable)',
         inline=False
     )
 
@@ -756,7 +759,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     embed.add_field(name='Item Level Equipped', value=f'{ready_mark} {character_ilvl}', inline=True)
 
-    expected_slots = ['back', 'chest', 'wrist', 'feet', 'finger1', 'finger2', 'mainhand', 'offhand']
+    expected_slots = ['back', 'chest', 'wrist', 'legs', 'feet', 'finger1', 'finger2', 'mainhand', 'offhand']
 
     for gearslot in enchanted_list:
         try:
