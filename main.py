@@ -11,7 +11,8 @@ import requests
 import json
 import os
 
-from discord import app_commands, ui
+from discord import app_commands, ui, Interaction
+from discord.app_commands import AppCommandError
 from discord.ui import Button, View
 from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
@@ -174,15 +175,12 @@ async def on_ready():
     print('------')
 
 @client.tree.error
-async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+async def on_app_command_error(interaction: Interaction, error: AppCommandError):
     if isinstance(error, app_commands.errors.CommandOnCooldown):
         embed = discord.Embed(title='Error')
         embed.add_field(name='Command on Cooldown', value=f'That command is on cooldown for {error.retry_after:.2f} more seconds.')
         embed.set_thumbnail(url=error_icon_url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
-
-@client.tree.error
-async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     if isinstance(error, discord.app_commands.MissingAnyRole):
         embed = discord.Embed(title='Error')
         embed.add_field(name='Permission Missing', value=f"You're missing a permission to do that.")
@@ -680,7 +678,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     try:
         min_ilvl: int = int(raid_worksheet.col_values(1)[0])
-        enchants_list: list = raid_worksheet.col_values(8)[1:]
+        enchants_list: list = raid_worksheet.col_values(9)[1:]
     except:
         logging.error("Exception occurred", exc_info=True)
         await interaction.response.send_message("Something went wrong getting raid ready info from Google Sheets. Please try again later.")
