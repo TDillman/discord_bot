@@ -688,7 +688,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     server_slug = character_server.lower().replace("'", "").replace(" ", "")
 
     try:
-        character_equipment_unloaded = requests.get(f"https://raider.io/api/v1/characters/profile?region=us&realm={server_slug}&name={character_name}&fields=gear").content
+        character_equipment_unloaded = requests.get(f"https://raider.io/api/v1/characters/profile?region=us&realm={server_slug}&name={character_name}&fields=gear:live").content
         character_equipment = json.loads(character_equipment_unloaded)
     except HTTPError as e:
         logging.error("Exception occurred", exc_info=True)
