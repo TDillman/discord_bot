@@ -50,6 +50,20 @@ api_client = BlizzardApi(bot_secrets.BLIZZARD_CLIENT_ID, bot_secrets.BLIZZARD_SE
 # Google Sheets API
 gc = gspread.service_account()
 
+death_knight_role = bot_config.class_role_dict['Death Knight']
+demon_hunter_role = bot_config.class_role_dict['Demon Hunter']
+druid_role = bot_config.class_role_dict['Druid']
+evoker_role = bot_config.class_role_dict['Evoker']
+hunter_role = bot_config.class_role_dict['Hunter']
+mage_role = bot_config.class_role_dict['Mage']
+monk_role = bot_config.class_role_dict['Monk']
+paladin_role = bot_config.class_role_dict['Paladin']
+priest_role = bot_config.class_role_dict['Priest']
+rogue_role = bot_config.class_role_dict['Rogue']
+shaman_role = bot_config.class_role_dict['Shaman']
+warlock_role = bot_config.class_role_dict['Warlock']
+warrior_role = bot_config.class_role_dict['Warrior']
+
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents.all()):
         super().__init__(intents=intents)
@@ -64,109 +78,13 @@ class MyClient(discord.Client):
         self.guild_member_role = bot_config.guild_member_role
         self.raid_friends_role = bot_config.raid_friends_role
 
+
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
-        self.add_view(RoleSelectView())
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 client = MyClient(intents=intents)
-
-class RoleSelectView(discord.ui.View):
-    def __init__(self) -> None:
-        super().__init__(timeout = None)
-
-    @discord.ui.button(label = "Overwatch", style=discord.ButtonStyle.green, custom_id="overwatch", emoji="🔫")
-    async def overwatch(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.overwatch_role) is not discord.Role:
-            client.overwatch_role = interaction.guild.get_role(bot_config.overwatch_role)
-        if client.overwatch_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.overwatch_role)
-            button.label = "Remove Overwatch Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-        else:
-            await interaction.user.remove_roles(client.overwatch_role)
-            button.label = "Add Overwatch Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label = "WoW M+", style=discord.ButtonStyle.green, custom_id="m_plus_runner", emoji="🥇")
-    async def m_plus_runner(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.m_plus_role) is not discord.Role:
-            client.m_plus_role = interaction.guild.get_role(bot_config.m_plus_role)
-        if client.m_plus_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.m_plus_role)
-            button.label = "Remove M+ Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-        else:
-            await interaction.user.remove_roles(client.m_plus_role)
-            button.label = "Add M+ Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label = "WoW PvP", style=discord.ButtonStyle.green, custom_id="wow_pvp", emoji="🪓")
-    async def wow_pvp(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.pvp_role) is not discord.Role:
-            client.pvp_role = interaction.guild.get_role(bot_config.pvp_role)
-        if client.pvp_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.pvp_role)
-            button.label = "Remove PvP Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-        else:
-            await interaction.user.remove_roles(client.pvp_role)
-            button.label = "Add PvP Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label = "Movie Night", style=discord.ButtonStyle.green, custom_id="movie_night", emoji="🍿")
-    async def movie_night(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.movie_role) is not discord.Role:
-            client.movie_role = interaction.guild.get_role(bot_config.movie_role)
-        if client.movie_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.movie_role)
-            button.label = "Remove Movie Night Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-        else:
-            await interaction.user.remove_roles(client.movie_role)
-            button.label = "Add Movie Night Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="Mightcon Vegas", style=discord.ButtonStyle.green, custom_id="mightcon_vegas", emoji="🎰")
-    async def mightcon(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.mightcon_role) is not discord.Role:
-            client.mightcon_role = interaction.guild.get_role(bot_config.mightcon_role)
-        if client.mightcon_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.mightcon_role)
-            button.label = "Remove Mightcon Vegas Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-            await interaction.response.send_message(f'{client.mightcon_role.mention} has been added to your roles!\n'
-                                                    f'Make sure you update the sheet at https://1drv.ms/x/s!AkHIyFpbYJ2agmoleZoB1hQm8ad7?e=3Sf8z8', ephemeral=True)
-        else:
-            await interaction.user.remove_roles(client.mightcon_role)
-            button.label = "Add Mightcon Vegas Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="Colorado Peeps", style=discord.ButtonStyle.green, custom_id="colorado", emoji="🏔")
-    async def colorado(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if type(client.colorado_role) is not discord.Role:
-            client.colorado_role = interaction.guild.get_role(bot_config.colorado_role)
-        if client.colorado_role not in interaction.user.roles:
-            await interaction.user.add_roles(client.colorado_role)
-            button.label = "Remove Colorado Peeps Role"
-            button.style = discord.ButtonStyle.red
-            await interaction.response.edit_message(view=self)
-        else:
-            await interaction.user.remove_roles(client.colorado_role)
-            button.label = "Add Colorado Peeps Role"
-            button.style = discord.ButtonStyle.green
-            await interaction.response.edit_message(view=self)
 
 @client.event
 async def on_ready():
@@ -188,19 +106,57 @@ async def on_app_command_error(interaction: Interaction, error: AppCommandError)
         embed.set_thumbnail(url=error_icon_url)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+class ClassSelect(discord.ui.Select):
+    def __init__(self):
+        options=[
+            discord.SelectOption(label="Death Knight"),
+            discord.SelectOption(label="Demon Hunter"),
+            discord.SelectOption(label="Druid"),
+            discord.SelectOption(label="Evoker"),
+            discord.SelectOption(label="Hunter"),
+            discord.SelectOption(label="Mage"),
+            discord.SelectOption(label="Monk"),
+            discord.SelectOption(label="Paladin"),
+            discord.SelectOption(label="Priest"),
+            discord.SelectOption(label="Rogue"),
+            discord.SelectOption(label="Shaman"),
+            discord.SelectOption(label="Warlock"),
+            discord.SelectOption(label="Warrior")
+            ]
+        super().__init__(placeholder="Select an option",max_values=13,min_values=1,options=options)
+    async def callback(self, interaction: discord.Interaction):
+        if 676185937323229189 not in interaction.user.roles:
+            for player_class in self.values:
+                class_string = ', '.join(self.values)
+                if bot_config.class_role_dict[player_class] in interaction.user.roles:
+                    await interaction.user.remove_roles(discord.Object(bot_config.class_role_dict[player_class]))
+                else: await interaction.user.add_roles(discord.Object(bot_config.class_role_dict[player_class]))
+            await interaction.response.send_message(f'You have selected {class_string}. '
+                                                    f'You now have access to these class channels.', ephemeral=True)
+        else: await interaction.response.send_message(f'You need to have the Guild Member role to select classes.', ephemeral=True)
+
+class ClassSelectView(discord.ui.View):
+    def __init__(self, *, timeout = 180):
+        super().__init__(timeout=timeout)
+        self.add_item(ClassSelect())
+
 @client.tree.command()
-@discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader")
-async def role_select(interaction: discord.Interaction):
-    embed = discord.Embed(title='Roles')
-    embed.add_field(name='Select Your Roles',
-                    value=f"Click the button you'd like to get pings for! Click it again to remove the role.")
-    embed.set_thumbnail(url=might_logo)
-    await interaction.response.send_message(embed=embed, view = RoleSelectView())
+async def class_role_menu(interaction: discord.Interaction):
+    await interaction.response.send_message("Select the class channels you want access to!",view=ClassSelectView())
 
 @client.tree.command()
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
+
+@client.tree.command()
+async def r2rlist(interaction: discord.Interaction):
+    """Lists all the people who are ready to raid!"""
+    guild = client.get_guild(bot_config.GUILD_ID)
+    r2r_role = guild.get_role(bot_config.ready_to_raid_role)
+    r2r_list = [member.display_name for member in r2r_role.members]
+    r2r_list = ', '.join(r2r_list)
+    await interaction.response.send_message(f'{r2r_list}', ephemeral=True)
 
 # The rename decorator allows us to change the display of the parameter on Discord.
 @client.tree.command()
@@ -411,12 +367,6 @@ async def imdumb(interaction: discord.Interaction):
 async def aster(interaction: discord.Interaction):
     """That face. That goddamn face."""
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png')
-
-@client.tree.command()
-@app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
-async def abba(interaction: discord.Interaction):
-    """Hehehehehehehe"""
-    await interaction.response.send_message('https://tenor.com/view/lizard-laughing-laughinglizard-hehehe-gif-5215392')
 
 @client.tree.command()
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))

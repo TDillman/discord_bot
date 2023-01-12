@@ -150,6 +150,22 @@ enchant_map = {
     6496: "Frosted Armor Kit",
 }
 
+class_role_dict = {
+    "Death Knight": 1062137979314905179,
+    "Demon Hunter": 1062138171242070036,
+    "Druid": 1062138176216506448,
+    "Evoker": 1062138178749857792,
+    "Hunter": 1062138181513920512,
+    "Mage": 1062138229207339058,
+    "Monk": 1062138232256602302,
+    "Paladin": 1062138234416676874,
+    "Priest": 1062138236811608095,
+    "Rogue": 1062138238938132511,
+    "Shaman": 1062138241404383292,
+    "Warlock": 1062138250325659658,
+    "Warrior": 1062138252884189326
+}
+
 wow_spec_dict = {
     "Death Knight": {
         "a Blood": [0xC41E3A, 'Tank',
