@@ -9,6 +9,10 @@ ready_to_raid_role = 787441363222396928
 guild_member_role = 676185937323229189
 raid_friends_role = 923372461293199400
 
+blacklisted_users = [
+    312278335260721163,
+]
+
 kat_gif_list = [
     "https://tenor.com/view/eye-squint-markiplier-glare-suspicious-gif-15742154",
     "https://tenor.com/view/really-what-squint-chicken-gif-15168180",

@@ -140,16 +140,27 @@ class ClassSelectView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.add_item(ClassSelect())
 
+def is_blacklisted(interaction: discord.Interaction):
+    if interaction.user.id in bot_config.blacklisted_users:
+        return False #blacklisted. Seems backwards, but it's not.
+    return True #not blacklisted
+
+# @app_commands.check(is_blacklisted).error
+# async def @app_commands.check(is_blacklisted)_error(interaction: discord.Interaction, error):
+#     await interaction.response.send_message(f'Error.', ephemeral=True)
+
 @client.tree.command()
 async def class_role_menu(interaction: discord.Interaction):
     await interaction.response.send_message("Select the class channels you want access to!",view=ClassSelectView())
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 async def r2rlist(interaction: discord.Interaction):
     """Lists all the people who are ready to raid!"""
     guild = client.get_guild(bot_config.GUILD_ID)
@@ -160,6 +171,7 @@ async def r2rlist(interaction: discord.Interaction):
 
 # The rename decorator allows us to change the display of the parameter on Discord.
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.rename(text_to_send='text')
 @app_commands.describe(text_to_send='Text to send in the current channel')
 async def send(interaction: discord.Interaction, text_to_send: str):
@@ -169,6 +181,7 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Member Info')
+@app_commands.check(is_blacklisted)
 async def show_member_info(interaction: discord.Interaction, member: discord.Member):
     try:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -195,222 +208,259 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
         logging.error("Exception occurred", exc_info=True)
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spooky(interaction: discord.Interaction):
     """There's always money in the banana stand!"""
     await interaction.response.send_message('https://tenor.com/view/arrested-development-claw-hand-juice-box-laughing-evil-laugh-gif-5335530')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def scrumpy(interaction: discord.Interaction):
     """Just his opinion"""
     await interaction.response.send_message('Thinks your bags are awful')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def golfclap(interaction: discord.Interaction):
     """Well played"""
     await interaction.response.send_message('https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def whatever(interaction: discord.Interaction):
     """Whatever man"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/765619338337058827/802299499908563024/whatever.gif')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cool(interaction: discord.Interaction):
     """Peralta says"""
     await interaction.response.send_message('https://tenor.com/view/andy-samberg-brooklyn99-jake-peralta-cool-gif-12063970')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst(interaction: discord.Interaction):
     """Is it though?"""
     await interaction.response.send_message('https://tenor.com/view/is-it-though-thor-smile-gif-13334930')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst2(interaction: discord.Interaction):
     """I mean..."""
     await interaction.response.send_message('https://tenor.com/view/shrug-what-huh-will-smith-i-mean-gif-15916247')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def beylock(interaction: discord.Interaction):
     """I love this song"""
     await interaction.response.send_message('https://imgur.com/a/xux2u6p')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def happybirthday(interaction: discord.Interaction):
     """Party at Kat's place!"""
     await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def magic(interaction: discord.Interaction):
     """Don't ask how"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/761438362720272394/Kat_Confetti.gif')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def lynkz(interaction: discord.Interaction):
     """Who is that?"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/899091363046522910/unknown.png')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def candercane(interaction: discord.Interaction):
     """This child is furious"""
     await interaction.response.send_message('https://giphy.com/gifs/angry-mad-anger-l1J9u3TZfpmeDLkD6')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wat(interaction: discord.Interaction):
     """wat"""
     await interaction.response.send_message('https://imgur.com/a/PnB5eFk')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def thisisfine(interaction: discord.Interaction):
     """I'll probably survive"""
     await interaction.response.send_message('https://imgur.com/a/uDAO5In')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def pirate(interaction: discord.Interaction):
     """Pirate shimmy!"""
     await interaction.response.send_message('https://imgur.com/a/TDot4Ba')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def suckit(interaction: discord.Interaction):
     """Suck it!"""
     await interaction.response.send_message('https://imgur.com/Fy6RhWI')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def risn(interaction: discord.Interaction):
     """K"""
     await interaction.response.send_message('https://www.circlek.com/themes/custom/circlek/images/logos/logo-full-color-rgb.jpg')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def hakkd(interaction: discord.Interaction):
     """Don't let it happen again"""
     await interaction.response.send_message('https://tenor.com/view/mad-monster-dont-let-it-happen-again-gif-14024298')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wtf(interaction: discord.Interaction):
     """What the fuck?"""
     await interaction.response.send_message('https://giphy.com/gifs/what-the-fuck-wtf-ukGm72ZLZvYfS')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rain(interaction: discord.Interaction):
     """Lil bih"""
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/676183384061378571/856642945481310228/unknown.png')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imout(interaction: discord.Interaction):
     """Peace out"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183306924064768/866005404839837706/sylvanas.gif')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def daddychill(interaction: discord.Interaction):
     """What the hell is even that?!"""
     await interaction.response.send_message('https://tenor.com/view/what-the-hell-is-even-gif-20535402')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def guacdrop(interaction: discord.Interaction):
     """Not the guacamole!"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/917450971569877044/917465265036488704/20211105_213516.jpg')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rightright(interaction: discord.Interaction):
     """From a show about nothing"""
     await interaction.response.send_message('https://tenor.com/view/seinfeld-jerry-seinfeld-oh-right-agree-gif-4436696')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def shit(interaction: discord.Interaction):
     """Get your poop in a group"""
     await interaction.response.send_message('https://giphy.com/gifs/get-well-then-woTdBa435yy6A')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def hydrate(interaction: discord.Interaction):
     """Hydration is important"""
     await interaction.response.send_message('https://tenor.com/view/water-smile-drink-water-gif-13518129')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spoon(interaction: discord.Interaction):
     """My spoon is too big"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/503025662546935809/747820543918735370/A_little_party_never_killed_no_body_gif.gif')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imdumb(interaction: discord.Interaction):
     """I'm dumb"""
     await interaction.response.send_message('https://tenor.com/view/winston-schmidt-max-greenfield-new-girl-gif-15041554')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def aster(interaction: discord.Interaction):
     """That face. That goddamn face."""
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def drew(interaction: discord.Interaction):
     """Cold. Dead. Lifeless."""
     await interaction.response.send_message('https://tenor.com/view/sparkly-eyes-joy-happy-anime-hug-gif-15852045')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def pig(interaction: discord.Interaction):
     """This little piggy..."""
     await interaction.response.send_message('https://tenor.com/view/pig-cute-gif-21946909')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def listen(interaction: discord.Interaction):
     """listen here"""
     await interaction.response.send_message('https://i.pinimg.com/originals/ef/a6/48/efa648c67f3cb05287ded99612af130f.png')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def nyrixx(interaction: discord.Interaction):
     """Never sneak up on a Schrute."""
     await interaction.response.send_message('https://tenor.com/view/office-dwight-schrute-surprised-gif-14541388')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def yzu(interaction: discord.Interaction):
     """eli5"""
     await interaction.response.send_message('https://tenor.com/view/confused-the-office-michael-scott-steve-carell-explain-this-to-me-like-im-five-gif-4527435')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def ben(interaction: discord.Interaction):
     """Finger"""
     await interaction.response.send_message('https://media.discordapp.net/attachments/199644505845137408/798327813479727114/2015-02-10.gif')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheat(interaction: discord.Interaction):
     """Get excited"""
     await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def kat(interaction: discord.Interaction):
     """Squints"""
@@ -418,24 +468,28 @@ async def kat(interaction: discord.Interaction):
     await interaction.response.send_message(kat_gif)
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheers(interaction: discord.Interaction):
     """Cheers mate"""
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/775444197468667904/1042974872407646218/trim.9B102A43-2EA1-4846-847C-25468EB6804C.gif")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def dontdothat(interaction: discord.Interaction):
     """Don't do that"""
     await interaction.response.send_message("https://imgur.com/a/xEKQA8H")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def specimen(interaction: discord.Interaction):
     """Nope"""
     await interaction.response.send_message("https://tenor.com/view/run-running-rumning-away-gif-26050933")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wow(interaction: discord.Interaction):
     """Wow"""
@@ -459,6 +513,7 @@ async def wow(interaction: discord.Interaction):
         await interaction.response.send_message("Can't communicate with API. Sorry :(")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 @app_commands.describe(search='Search criteria')
 async def jams(interaction: discord.Interaction, search: str):
@@ -471,6 +526,7 @@ async def jams(interaction: discord.Interaction, search: str):
         await interaction.response.send_message(youtube_video_url)
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.describe(mock='Mocking text')
 async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
@@ -478,6 +534,7 @@ async def mock(interaction: discord.Interaction, mock: str):
     await interaction.response.send_message(mocking_text)
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 async def mightcon2(interaction: discord.Interaction):
     """Mightcon 2: Las Vegas memories"""
     # Randomly selects an image to send to Discord
@@ -491,12 +548,14 @@ async def mightcon2(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, file=file)
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def sixtynine(interaction: discord.Interaction):
     """Nice"""
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1039705067235835934/1043215596181016666/IMG_3549.jpg")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 async def pick(interaction: discord.Interaction):
     """What should I play in Dragonflight?"""
     # Select random class from wow_spec_dict
@@ -520,6 +579,7 @@ async def pick(interaction: discord.Interaction):
 
 movie_worksheet = gc.open('Beyplex').get_worksheet(0)
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def movie(interaction: discord.Interaction):
     try:
@@ -552,6 +612,7 @@ async def movie(interaction: discord.Interaction):
         await interaction.response.send_message("Something went wrong. Sorry :(")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def token(interaction: discord.Interaction):
     """
@@ -572,6 +633,7 @@ async def token(interaction: discord.Interaction):
         await interaction.response.send_message("Something went wrong. Please try again later.")
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def status(interaction: discord.Interaction):
     """Status of the Arygos server"""
@@ -618,6 +680,7 @@ async def status(interaction: discord.Interaction):
 
 raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
 @client.tree.command(description="Checks a user's character for raid readiness")
+@app_commands.check(is_blacklisted)
 @discord.app_commands.checks.has_any_role("GM", "Assistant GM", "Guild Officer", "Guild Leader", "Guild Member")
 @app_commands.describe(character_name='character name')
 @app_commands.describe(character_server='server name')
@@ -746,6 +809,7 @@ help_string1: str = f'\n'.join(str(name) for name in command_list[:middle_index]
 help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:])
 
 @client.tree.command()
+@app_commands.check(is_blacklisted)
 async def help(interaction: discord.Interaction) -> str:
     """List out the bot commands"""
     embed = discord.Embed(title='Bot Commands')
