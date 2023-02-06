@@ -142,19 +142,19 @@ class ClassSelectView(discord.ui.View):
 def is_blacklisted(interaction: discord.Interaction):
     if interaction.user.id in bot_config.blacklisted_users:
         return False #blacklisted. Seems backwards, but it's not.
-        logger.info(f'{interaction.user.name} is blacklisted from using commands.')
+        logger.info(f'{interaction.user.name} ({interaction.user.id}) is blacklisted from using commands.')
     return True #not blacklisted
 
 @client.tree.command()
 async def class_role_menu(interaction: discord.Interaction):
-    logger.info(f'{interaction.user.name} ran {class_role_menu.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {class_role_menu.name}')
     await interaction.response.send_message("Select the class channels you want access to!",view=ClassSelectView())
 
 @client.tree.command()
 @app_commands.check(is_blacklisted)
 async def hello(interaction: discord.Interaction):
     """Says hello!"""
-    logger.info(f'{interaction.user.name} ran {hello.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {hello.name}')
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
 
 @client.tree.command()
@@ -165,7 +165,7 @@ async def r2rlist(interaction: discord.Interaction):
     r2r_role = guild.get_role(bot_config.ready_to_raid_role)
     r2r_list = [member.display_name for member in r2r_role.members]
     r2r_list = ', '.join(r2r_list)
-    logger.info(f'{interaction.user.name} ran {r2rlist.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {r2rlist.name}')
     await interaction.response.send_message(f'{r2r_list}', ephemeral=True)
 
 # The rename decorator allows us to change the display of the parameter on Discord.
@@ -175,7 +175,7 @@ async def r2rlist(interaction: discord.Interaction):
 @app_commands.describe(text_to_send='Text to send in the current channel')
 async def send(interaction: discord.Interaction, text_to_send: str):
     """Sends the text into the current channel."""
-    logger.info(f'{interaction.user.name} ran {send.name}: {text_to_send}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {send.name}: {text_to_send}')
     await interaction.response.send_message(text_to_send)
 
 
@@ -203,7 +203,7 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
                         value=joined_at)
         embed.add_field(name="Roles", value=roles, inline=False)
         embed.set_author(name=member.display_name, icon_url=member.avatar)
-        logger.info(f'{interaction.user.name} ran {show_member_info.name} on {member} ({member.id})')
+        logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {show_member_info.name} on {member} ({member.id})')
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         logger.error("Exception occurred", exc_info=True)
@@ -213,7 +213,7 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spooky(interaction: discord.Interaction):
     """There's always money in the banana stand!"""
-    logger.info(f'{interaction.user.name} ran {spooky.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {spooky.name}')
     await interaction.response.send_message('https://tenor.com/view/arrested-development-claw-hand-juice-box-laughing-evil-laugh-gif-5335530')
 
 @client.tree.command()
@@ -221,7 +221,7 @@ async def spooky(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def scrumpy(interaction: discord.Interaction):
     """Just his opinion"""
-    logger.info(f'{interaction.user.name} ran {scrumpy.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {scrumpy.name}')
     await interaction.response.send_message('Thinks your bags are awful')
 
 @client.tree.command()
@@ -229,7 +229,7 @@ async def scrumpy(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def golfclap(interaction: discord.Interaction):
     """Well played"""
-    logger.info(f'{interaction.user.name} ran {golfclap.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {golfclap.name}')
     await interaction.response.send_message('https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611')
 
 @client.tree.command()
@@ -237,7 +237,7 @@ async def golfclap(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def whatever(interaction: discord.Interaction):
     """Whatever man"""
-    logger.info(f'{interaction.user.name} ran {whatever.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {whatever.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/765619338337058827/802299499908563024/whatever.gif')
 
 @client.tree.command()
@@ -245,7 +245,7 @@ async def whatever(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cool(interaction: discord.Interaction):
     """Peralta says"""
-    logger.info(f'{interaction.user.name} ran {cool.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {cool.name}')
     await interaction.response.send_message('https://tenor.com/view/andy-samberg-brooklyn99-jake-peralta-cool-gif-12063970')
 
 @client.tree.command()
@@ -253,7 +253,7 @@ async def cool(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst(interaction: discord.Interaction):
     """Is it though?"""
-    logger.info(f'{interaction.user.name} ran {myst.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {myst.name}')
     await interaction.response.send_message('https://tenor.com/view/is-it-though-thor-smile-gif-13334930')
 
 @client.tree.command()
@@ -261,7 +261,7 @@ async def myst(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst2(interaction: discord.Interaction):
     """I mean..."""
-    logger.info(f'{interaction.user.name} ran {myst2.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {myst2.name}')
     await interaction.response.send_message('https://tenor.com/view/shrug-what-huh-will-smith-i-mean-gif-15916247')
 
 @client.tree.command()
@@ -269,7 +269,7 @@ async def myst2(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def beylock(interaction: discord.Interaction):
     """I love this song"""
-    logger.info(f'{interaction.user.name} ran {beylock.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {beylock.name}')
     await interaction.response.send_message('https://imgur.com/a/xux2u6p')
 
 @client.tree.command()
@@ -277,7 +277,7 @@ async def beylock(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def happybirthday(interaction: discord.Interaction):
     """Party at Kat's place!"""
-    logger.info(f'{interaction.user.name} ran {happybirthday.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {happybirthday.name}')
     await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
 
 @client.tree.command()
@@ -285,7 +285,7 @@ async def happybirthday(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def magic(interaction: discord.Interaction):
     """Don't ask how"""
-    logger.info(f'{interaction.user.name} ran {magic.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {magic.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/761438362720272394/Kat_Confetti.gif')
 
 @client.tree.command()
@@ -293,7 +293,7 @@ async def magic(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def lynkz(interaction: discord.Interaction):
     """Who is that?"""
-    logger.info(f'{interaction.user.name} ran {lynkz.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {lynkz.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/899091363046522910/unknown.png')
 
 @client.tree.command()
@@ -301,7 +301,7 @@ async def lynkz(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def candercane(interaction: discord.Interaction):
     """This child is furious"""
-    logger.info(f'{interaction.user.name} ran {candercane.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {candercane.name}')
     await interaction.response.send_message('https://giphy.com/gifs/angry-mad-anger-l1J9u3TZfpmeDLkD6')
 
 @client.tree.command()
@@ -309,7 +309,7 @@ async def candercane(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wat(interaction: discord.Interaction):
     """wat"""
-    logger.info(f'{interaction.user.name} ran {wat.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {wat.name}')
     await interaction.response.send_message('https://imgur.com/a/PnB5eFk')
 
 @client.tree.command()
@@ -317,7 +317,7 @@ async def wat(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def thisisfine(interaction: discord.Interaction):
     """I'll probably survive"""
-    logger.info(f'{interaction.user.name} ran {thisisfine.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {thisisfine.name}')
     await interaction.response.send_message('https://imgur.com/a/uDAO5In')
 
 @client.tree.command()
@@ -325,7 +325,7 @@ async def thisisfine(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def pirate(interaction: discord.Interaction):
     """Pirate shimmy!"""
-    logger.info(f'{interaction.user.name} ran {pirate.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {pirate.name}')
     await interaction.response.send_message('https://imgur.com/a/TDot4Ba')
 
 @client.tree.command()
@@ -333,7 +333,7 @@ async def pirate(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def suckit(interaction: discord.Interaction):
     """Suck it!"""
-    logger.info(f'{interaction.user.name} ran {suckit.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {suckit.name}')
     await interaction.response.send_message('https://imgur.com/Fy6RhWI')
 
 @client.tree.command()
@@ -341,7 +341,7 @@ async def suckit(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def risn(interaction: discord.Interaction):
     """K"""
-    logger.info(f'{interaction.user.name} ran {risn.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {risn.name}')
     await interaction.response.send_message('https://www.circlek.com/themes/custom/circlek/images/logos/logo-full-color-rgb.jpg')
 
 @client.tree.command()
@@ -349,7 +349,7 @@ async def risn(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def hakkd(interaction: discord.Interaction):
     """Don't let it happen again"""
-    logger.info(f'{interaction.user.name} ran {hakkd.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {hakkd.name}')
     await interaction.response.send_message('https://tenor.com/view/mad-monster-dont-let-it-happen-again-gif-14024298')
 
 @client.tree.command()
@@ -357,7 +357,7 @@ async def hakkd(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wtf(interaction: discord.Interaction):
     """What the fuck?"""
-    logger.info(f'{interaction.user.name} ran {wtf.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {wtf.name}')
     await interaction.response.send_message('https://giphy.com/gifs/what-the-fuck-wtf-ukGm72ZLZvYfS')
 
 @client.tree.command()
@@ -365,7 +365,7 @@ async def wtf(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rain(interaction: discord.Interaction):
     """Lil bih"""
-    logger.info(f'{interaction.user.name} ran {rain.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {rain.name}')
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/676183384061378571/856642945481310228/unknown.png')
 
 @client.tree.command()
@@ -373,7 +373,7 @@ async def rain(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imout(interaction: discord.Interaction):
     """Peace out"""
-    logger.info(f'{interaction.user.name} ran {imout.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {imout.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/676183306924064768/866005404839837706/sylvanas.gif')
 
 @client.tree.command()
@@ -381,7 +381,7 @@ async def imout(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def daddychill(interaction: discord.Interaction):
     """What the hell is even that?!"""
-    logger.info(f'{interaction.user.name} ran {daddychill.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {daddychill.name}')
     await interaction.response.send_message('https://tenor.com/view/what-the-hell-is-even-gif-20535402')
 
 @client.tree.command()
@@ -389,7 +389,7 @@ async def daddychill(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def guacdrop(interaction: discord.Interaction):
     """Not the guacamole!"""
-    logger.info(f'{interaction.user.name} ran {guacdrop.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {guacdrop.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/917450971569877044/917465265036488704/20211105_213516.jpg')
 
 @client.tree.command()
@@ -397,7 +397,7 @@ async def guacdrop(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rightright(interaction: discord.Interaction):
     """From a show about nothing"""
-    logger.info(f'{interaction.user.name} ran {rightright.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {rightright.name}')
     await interaction.response.send_message('https://tenor.com/view/seinfeld-jerry-seinfeld-oh-right-agree-gif-4436696')
 
 @client.tree.command()
@@ -405,7 +405,7 @@ async def rightright(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def shit(interaction: discord.Interaction):
     """Get your poop in a group"""
-    logger.info(f'{interaction.user.name} ran {shit.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {shit.name}')
     await interaction.response.send_message('https://giphy.com/gifs/get-well-then-woTdBa435yy6A')
 
 @client.tree.command()
@@ -413,7 +413,7 @@ async def shit(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def hydrate(interaction: discord.Interaction):
     """Hydration is important"""
-    logger.info(f'{interaction.user.name} ran {hydrate.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {hydrate.name}')
     await interaction.response.send_message('https://tenor.com/view/water-smile-drink-water-gif-13518129')
 
 @client.tree.command()
@@ -421,7 +421,7 @@ async def hydrate(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spoon(interaction: discord.Interaction):
     """My spoon is too big"""
-    logger.info(f'{interaction.user.name} ran {spoon.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {spoon.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/503025662546935809/747820543918735370/A_little_party_never_killed_no_body_gif.gif')
 
 @client.tree.command()
@@ -429,7 +429,7 @@ async def spoon(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imdumb(interaction: discord.Interaction):
     """I'm dumb"""
-    logger.info(f'{interaction.user.name} ran {imdumb.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {imdumb.name}')
     await interaction.response.send_message('https://tenor.com/view/winston-schmidt-max-greenfield-new-girl-gif-15041554')
 
 @client.tree.command()
@@ -437,7 +437,7 @@ async def imdumb(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def aster(interaction: discord.Interaction):
     """That face. That goddamn face."""
-    logger.info(f'{interaction.user.name} ran {aster.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {aster.name}')
     await interaction.response.send_message('https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png')
 
 @client.tree.command()
@@ -445,7 +445,7 @@ async def aster(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def drew(interaction: discord.Interaction):
     """Cold. Dead. Lifeless."""
-    logger.info(f'{interaction.user.name} ran {drew.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {drew.name}')
     await interaction.response.send_message('https://tenor.com/view/sparkly-eyes-joy-happy-anime-hug-gif-15852045')
 
 @client.tree.command()
@@ -453,7 +453,7 @@ async def drew(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def pig(interaction: discord.Interaction):
     """This little piggy..."""
-    logger.info(f'{interaction.user.name} ran {pig.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {pig.name}')
     await interaction.response.send_message('https://tenor.com/view/pig-cute-gif-21946909')
 
 @client.tree.command()
@@ -461,7 +461,7 @@ async def pig(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def listen(interaction: discord.Interaction):
     """listen here"""
-    logger.info(f'{interaction.user.name} ran {listen.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {listen.name}')
     await interaction.response.send_message('https://i.pinimg.com/originals/ef/a6/48/efa648c67f3cb05287ded99612af130f.png')
 
 @client.tree.command()
@@ -469,7 +469,7 @@ async def listen(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def nyrixx(interaction: discord.Interaction):
     """Never sneak up on a Schrute."""
-    logger.info(f'{interaction.user.name} ran {nyrixx.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {nyrixx.name}')
     await interaction.response.send_message('https://tenor.com/view/office-dwight-schrute-surprised-gif-14541388')
 
 @client.tree.command()
@@ -477,7 +477,7 @@ async def nyrixx(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def yzu(interaction: discord.Interaction):
     """eli5"""
-    logger.info(f'{interaction.user.name} ran {yzu.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {yzu.name}')
     await interaction.response.send_message('https://tenor.com/view/confused-the-office-michael-scott-steve-carell-explain-this-to-me-like-im-five-gif-4527435')
 
 @client.tree.command()
@@ -485,7 +485,7 @@ async def yzu(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def ben(interaction: discord.Interaction):
     """Finger"""
-    logger.info(f'{interaction.user.name} ran {ben.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {ben.name}')
     await interaction.response.send_message('https://media.discordapp.net/attachments/199644505845137408/798327813479727114/2015-02-10.gif')
 
 @client.tree.command()
@@ -493,7 +493,7 @@ async def ben(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheat(interaction: discord.Interaction):
     """Get excited"""
-    logger.info(f'{interaction.user.name} ran {cheat.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {cheat.name}')
     await interaction.response.send_message('https://tenor.com/view/the-office-space-umm-wow-ok-then-gif-15829379')
 
 @client.tree.command()
@@ -501,7 +501,7 @@ async def cheat(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def kat(interaction: discord.Interaction):
     """Squints"""
-    logger.info(f'{interaction.user.name} ran {kat.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {kat.name}')
     kat_gif = random.choice(kat_gif_list)
     await interaction.response.send_message(kat_gif)
 
@@ -510,7 +510,7 @@ async def kat(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheers(interaction: discord.Interaction):
     """Cheers mate"""
-    logger.info(f'{interaction.user.name} ran {cheers.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {cheers.name}')
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/775444197468667904/1042974872407646218/trim.9B102A43-2EA1-4846-847C-25468EB6804C.gif")
 
 @client.tree.command()
@@ -518,7 +518,7 @@ async def cheers(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def dontdothat(interaction: discord.Interaction):
     """Don't do that"""
-    logger.info(f'{interaction.user.name} ran {dontdothat.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {dontdothat.name}')
     await interaction.response.send_message("https://imgur.com/a/xEKQA8H")
 
 @client.tree.command()
@@ -526,7 +526,7 @@ async def dontdothat(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def specimen(interaction: discord.Interaction):
     """Nope"""
-    logger.info(f'{interaction.user.name} ran {specimen.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {specimen.name}')
     await interaction.response.send_message("https://tenor.com/view/run-running-rumning-away-gif-26050933")
 
 @client.tree.command()
@@ -534,7 +534,7 @@ async def specimen(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def wow(interaction: discord.Interaction):
     """Wow"""
-    logger.info(f'{interaction.user.name} ran {wow.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {wow.name}')
     response = requests.get(wow_url)
     if response.status_code == 200:
         movie_object = json.loads(requests.get(wow_url).content)
@@ -552,6 +552,7 @@ async def wow(interaction: discord.Interaction):
                        f"{wow_vid}\n"
                        f"\"{full_line}\"")
     else:
+        logger.error(f'Error communicating with API: {response.status_code} {response.reason}')
         await interaction.response.send_message("Can't communicate with API. Sorry :(")
 
 @client.tree.command()
@@ -560,7 +561,7 @@ async def wow(interaction: discord.Interaction):
 @app_commands.describe(search='Search criteria')
 async def jams(interaction: discord.Interaction, search: str):
     """Search YouTube for a video!"""
-    logger.info(f'{interaction.user.name} ran {jams.name} for {search}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {jams.name} for {search}')
     results = yt.search(search, max_results=5, order='relevance')
     if len(results) == 0:
         await interaction.response.send_message(f"No results for {search}")
@@ -573,7 +574,7 @@ async def jams(interaction: discord.Interaction, search: str):
 @app_commands.describe(mock='Mocking text')
 async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
-    logger.info(f'{interaction.user.name} ran {mock.name} for {mock}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {mock.name} for {mock}')
     mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
 
@@ -581,7 +582,7 @@ async def mock(interaction: discord.Interaction, mock: str):
 @app_commands.check(is_blacklisted)
 async def mightcon2(interaction: discord.Interaction):
     """Mightcon 2: Las Vegas memories"""
-    logger.info(f'{interaction.user.name} ran {mightcon2.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {mightcon2.name}')
     # Randomly selects an image to send to Discord
     path = "/home/ubuntu/beymax/mightcon2_pics"
     files = os.listdir(path)
@@ -597,7 +598,7 @@ async def mightcon2(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def sixtynine(interaction: discord.Interaction):
     """Nice"""
-    logger.info(f'{interaction.user.name} ran {sixtynine.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {sixtynine.name}')
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1039705067235835934/1043215596181016666/IMG_3549.jpg")
 
 @client.tree.command()
@@ -617,7 +618,7 @@ async def token(interaction: discord.Interaction):
             url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
                 'finishedsmall.png')
         await interaction.response.send_message(embed=embed)
-        logger.info(f'{interaction.user.name} ran {token.name} with a result of {token_object["price"] / 10000:,.0f} gold')
+        logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {token.name} with a result of {token_object["price"] / 10000:,.0f} gold')
     except Exception as e:
         logger.error(f"Exception occurred in {token.name}", exc_info=True)
         await interaction.response.send_message("Something went wrong. Please try again later.")
@@ -627,7 +628,7 @@ async def token(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def status(interaction: discord.Interaction):
     """Status of the Arygos server"""
-    logger.info(f'{interaction.user.name} ran {status.name}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {status.name}')
     try:
         server_object = api_client.wow.game_data.get_connected_realm("us", "en_US", 99)
 
@@ -665,7 +666,7 @@ async def status(interaction: discord.Interaction):
         embed.set_thumbnail(url=might_logo)
         await interaction.response.send_message(embed=embed)
     except Exception as e:
-        logger.error("Exception occurred", exc_info=True)
+        logger.error("Exception occurred with server status", exc_info=True)
         await interaction.response.send_message("Something went wrong. Please try again later.")
 
 raid_worksheet = gc.open('Raid Requirements').get_worksheet(1)
@@ -678,7 +679,7 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
     """
     Returns an embed with the specified character's R2R status
     """
-    logger.info(f'{interaction.user.name} ran {r2r.name} with args {character_name} {character_server}')
+    logger.info(f'{interaction.user.name} ({interaction.user.id}) ran {r2r.name} with args {character_name} {character_server}')
     try:
         min_ilvl: int = int(raid_worksheet.col_values(1)[0])
         enchants_list: list = raid_worksheet.col_values(9)[1:]
@@ -801,7 +802,7 @@ help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:]
 @app_commands.check(is_blacklisted)
 async def help(interaction: discord.Interaction) -> str:
     """List out the bot commands"""
-    logger.info(f'User {interaction.user} requested help')
+    logger.info(f'User {interaction.user} ({interaction.user.id}) requested help')
     embed = discord.Embed(title='Bot Commands')
     embed.add_field(name='User Commands',
                     value=help_string1,
