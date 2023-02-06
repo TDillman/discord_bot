@@ -790,7 +790,6 @@ async def r2r(interaction: discord.Interaction, character_name: str, character_s
 
     await interaction.edit_original_response(embed=embed)
 
-
 # Get the names of all the commands in this file to make a help command
 command_list: list = [f'/{x.name}' for x in client.tree.walk_commands()]
 command_list.sort()
