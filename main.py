@@ -10,6 +10,7 @@ import random
 import requests
 import json
 import os
+import socket
 
 from discord import app_commands, ui, Interaction
 from discord.app_commands import AppCommandError
@@ -17,21 +18,36 @@ from discord.ui import Button, View
 from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
 from dataclasses import dataclass, field
+from logging.handlers import SysLogHandler
 
+class ContextFilter(logging.Filter):
+    hostname = socket.gethostname()
+    def filter(self, record):
+        record.hostname = ContextFilter.hostname
+        return True
+syslog = SysLogHandler(address=(bot_secrets.papertrail_url, bot_secrets.papertrail_port))
+syslog.addFilter(ContextFilter())
+format = '%(asctime)s %(hostname)s beymax: %(message)s'
+formatter = logging.Formatter(format, datefmt='%b %d %H:%M:%S')
+syslog.setFormatter(formatter)
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-logging.getLogger(__name__).setLevel(logging.DEBUG)
+logger.addHandler(syslog)
+logger.setLevel(logging.INFO)
 
-handler = logging.handlers.RotatingFileHandler(
-    filename='python.log',
-    encoding='utf-8',
-    maxBytes=5 * 1024 * 1024,  # 5 MiB
-    backupCount=15,  # Rotate through 15 files
-)
-dt_fmt = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
+# logging.getLogger(__name__).setLevel(logging.DEBUG)
+#
+# handler = logging.handlers.RotatingFileHandler(
+#     filename='python.log',
+#     encoding='utf-8',
+#     maxBytes=5 * 1024 * 1024,  # 5 MiB
+#     backupCount=15,  # Rotate through 15 files
+# )
+# dt_fmt = '%Y-%m-%d %H:%M:%S'
+# formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
 
 MY_GUILD = discord.Object(id=bot_config.GUILD_ID)
 might_logo = 'https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcoloredfinishedsmall.png'
