@@ -175,7 +175,7 @@ async def r2rlist(interaction: discord.Interaction):
 @app_commands.describe(text_to_send='Text to send in the current channel')
 async def send(interaction: discord.Interaction, text_to_send: str):
     """Sends the text into the current channel."""
-    logger.info(f'{interaction.user.name} ran {send.name}: {text_to_send}
+    logger.info(f'{interaction.user.name} ran {send.name}: {text_to_send}')
     await interaction.response.send_message(text_to_send)
 
 
@@ -203,7 +203,7 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
                         value=joined_at)
         embed.add_field(name="Roles", value=roles, inline=False)
         embed.set_author(name=member.display_name, icon_url=member.avatar)
-        logger.info(f'{interaction.user.name} ran {show_member_info.name} on {member} ({member.id})
+        logger.info(f'{interaction.user.name} ran {show_member_info.name} on {member} ({member.id})')
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         logger.error("Exception occurred", exc_info=True)
