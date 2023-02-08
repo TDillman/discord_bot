@@ -10,7 +10,7 @@ guild_member_role = 676185937323229189
 raid_friends_role = 923372461293199400
 
 blacklisted_users = [
-    312278335260721163,
+    312278335260721163, # Voldemort
 ]
 
 kat_gif_list = [

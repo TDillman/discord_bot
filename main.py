@@ -139,10 +139,11 @@ class ClassSelectView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.add_item(ClassSelect())
 
-def is_blacklisted(interaction: discord.Interaction):
+async def is_blacklisted(interaction: discord.Interaction):
     if interaction.user.id in bot_config.blacklisted_users:
         return False #blacklisted. Seems backwards, but it's not.
         logger.info(f'{interaction.user.name} ({interaction.user.id}) is blacklisted from using commands.')
+        await interaction.response.send_message(f'You are blacklisted from using commands.', ephemeral=True)
     return True #not blacklisted
 
 @client.tree.command()
