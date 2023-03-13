@@ -1,6 +1,9 @@
 #secrets
 bot_secrets.py
 
+#mightcon pics
+./mightcon2_pics
+
 #bot logs
 *.log
 
