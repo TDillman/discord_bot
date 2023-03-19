@@ -227,8 +227,13 @@ async def beylock(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def happybirthday(interaction: discord.Interaction):
     """Party at Kat's place!"""
-    logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name}\tChannel: {interaction.channel.name}')
-    await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
+    #check if today is April 21st
+    if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 21:
+        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name} (No)\tChannel: {interaction.channel.name}')
+        await interaction.response.send_message('No', ephemeral=True)
+    else:
+        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name}\tChannel: {interaction.channel.name}')
+        await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
 
 @client.tree.command()
 @app_commands.check(is_blacklisted)
