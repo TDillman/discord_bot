@@ -25,6 +25,7 @@ class ContextFilter(logging.Filter):
     def filter(self, record):
         record.hostname = ContextFilter.hostname
         return True
+
 syslog = SysLogHandler(address=(bot_secrets.papertrail_url, bot_secrets.papertrail_port))
 syslog.addFilter(ContextFilter())
 format = '%(asctime)s %(hostname)s beymax: %(message)s'
@@ -112,8 +113,8 @@ async def on_app_command_error(interaction: Interaction, error: AppCommandError)
 async def is_blacklisted(interaction: discord.Interaction):
     if interaction.user.id in bot_config.blacklisted_users:
         return False #blacklisted. Seems backwards, but it's not.
-        logger.info(f'{interaction.user.name} ({interaction.user.id}) is blacklisted from using commands.')
         await interaction.response.send_message(f'You are blacklisted from using commands.', ephemeral=True)
+        logger.info(f'{interaction.user.name} ({interaction.user.id}) is blacklisted from using commands.')
     return True #not blacklisted
 
 # The rename decorator allows us to change the display of the parameter on Discord.
@@ -230,7 +231,7 @@ async def happybirthday(interaction: discord.Interaction):
     #check if today is April 21st
     if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 21:
         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name} (No)\tChannel: {interaction.channel.name}')
-        await interaction.response.send_message('No', ephemeral=True)
+        await interaction.response.send_message('Error: Command Unavailable', ephemeral=True)
     else:
         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name}\tChannel: {interaction.channel.name}')
         await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
@@ -428,7 +429,12 @@ async def specimen(interaction: discord.Interaction):
 async def jams(interaction: discord.Interaction, search: str):
     """Search YouTube for a video!"""
     results = yt.search(search, max_results=5, order='relevance')
-    if len(results) == 0:
+    #check if today is April First
+    if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
+        await interaction.response.send_message("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {jams.name}\tOptions: {search}'
+                    f'\tChannel: {interaction.channel.name}\tApril Fools lol')
+    elif len(results) == 0:
         await interaction.response.send_message(f"No results for {search}")
         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {jams.name}\tOptions: {search}'
                     f'\tChannel: {interaction.channel.name}\tVideo: No Results')
@@ -443,10 +449,10 @@ async def jams(interaction: discord.Interaction, search: str):
 @app_commands.describe(mock='Mocking text')
 async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
-    logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {mock.name}\tOptions: {mock}'
-                f'\tChannel: {interaction.channel.name}')
     mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
+    logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {mock.name}\tOptions: {mocking_text}'
+                f'\tChannel: {interaction.channel.name}')
 
 @client.tree.command()
 @app_commands.check(is_blacklisted)
@@ -483,12 +489,20 @@ async def token(interaction: discord.Interaction):
         print(token_object)
 
         embed = discord.Embed(title='WoW Token')
-        embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
+        # check if today is April First
+        if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
+            embed.add_field(name='Current Price', value=f'696969 gold lol')
+        else:
+            embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
                 'finishedsmall.png')
         await interaction.response.send_message(embed=embed)
-        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {token.name}\tResult: {token_object["price"] / 10000:,.0f} gold'
+        if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
+            logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {token.name}\tResult: 696969 gold'
+                        f'\tChannel: {interaction.channel.name}\tApril Fools lol')
+        else:
+            logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {token.name}\tResult: {token_object["price"] / 10000:,.0f} gold'
                     f'\tChannel: {interaction.channel.name}')
     except Exception as e:
         logger.error(f"Exception occurred in {token.name}", exc_info=True)
