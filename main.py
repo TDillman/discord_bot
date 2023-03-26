@@ -145,8 +145,6 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
         else:
             roles = '\n'.join([role.mention for role in member.roles[1:]])
 
-        print(discord.utils.get(member.activities, type=discord.ActivityType.custom))
-
         embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
         #embed.add_field(name='Activity', value=f'{activity}', inline=False)
         embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
@@ -158,6 +156,15 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         logger.error("Exception occurred", exc_info=True)
+
+@client.tree.command()
+@app_commands.rename(text_to_send='secret')
+@app_commands.describe(text_to_send='Secret to send to Bey')
+async def secret(interaction: discord.Interaction, text_to_send: str):
+    """Sends Bey a super secret message."""
+    logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {secret.name}\t Options: {text_to_send}\t'
+                f'Channel: {interaction.channel.name}')
+    await interaction.response.send_message("Message sent", ephemeral=True)
 
 @client.tree.command()
 @app_commands.check(is_blacklisted)
@@ -231,7 +238,7 @@ async def happybirthday(interaction: discord.Interaction):
     #check if today is April 21st
     if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 21:
         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name} (No)\tChannel: {interaction.channel.name}')
-        await interaction.response.send_message('Error: Command Unavailable', ephemeral=True)
+        await interaction.response.send_message('https://tenor.com/view/we-dont-do-that-here-black-panther-tchalla-bruce-gif-16558003', ephemeral=True)
     else:
         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {happybirthday.name}\tChannel: {interaction.channel.name}')
         await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
@@ -449,7 +456,11 @@ async def jams(interaction: discord.Interaction, search: str):
 @app_commands.describe(mock='Mocking text')
 async def mock(interaction: discord.Interaction, mock: str):
     """QuIt MaKiNg FuN oF mE"""
-    mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
+    # Check if today is April Fool's day
+    if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
+        mocking_text = "I'm A bIg DuMb SmElLy IdIoT"
+    else:
+        mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
     logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {mock.name}\tOptions: {mocking_text}'
                 f'\tChannel: {interaction.channel.name}')
@@ -562,7 +573,6 @@ help_string1: str = f'\n'.join(str(name) for name in command_list[:middle_index]
 help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:])
 
 @client.tree.command()
-@app_commands.check(is_blacklisted)
 async def help(interaction: discord.Interaction) -> str:
     """List out the bot commands"""
     logger.info(f'User {interaction.user} ({interaction.user.id}) requested help')
