@@ -1,19 +1,14 @@
 import discord
 import logging
-import asyncio
 import datetime
 import logging.handlers
 import bot_secrets
 import bot_config
 import random
-import requests
-import json
 import os
 import socket
 
-from discord import app_commands, ui, Interaction
-from discord.app_commands import AppCommandError
-from discord.ui import Button, View
+from discord import app_commands
 from blizzardapi import BlizzardApi
 from youtube_api import YouTubeDataAPI
 from dataclasses import dataclass, field
@@ -25,7 +20,10 @@ class ContextFilter(logging.Filter):
         record.hostname = ContextFilter.hostname
         return True
 
-syslog = SysLogHandler(address=(bot_secrets.papertrail_url, bot_secrets.papertrail_port))
+syslog = SysLogHandler(
+    address=(bot_secrets.papertrail_url,
+             bot_secrets.papertrail_port)
+)
 syslog.addFilter(ContextFilter())
 format = '%(asctime)s %(hostname)s beymax: %(message)s'
 formatter = logging.Formatter(format, datefmt='%b %d %H:%M:%S')
@@ -84,36 +82,31 @@ class MyClient(discord.Client):
 intents = discord.Intents.all()
 client = MyClient(intents=intents)
 
+async def is_blacklisted(interaction: discord.Interaction):
+    if interaction.user.id in bot_config.blacklisted_users:
+        return False #blacklisted. Seems backwards, but it's not.
+        await interaction.response.send_message(
+            'You are blacklisted from using commands.',
+            ephemeral=True
+        )
+        logger.info(f'{interaction.user.name} ({interaction.user.id}) '
+                    f'is blacklisted from using commands.')
+    return True #not blacklisted
+
+# The log_command decorator logs the user's command usage
+def log_command(func):
+    async def wrapper(interaction: discord.Interaction, **kwargs):
+        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\t'
+                    f'Command: {func.__name__}\t'
+                    f'Options: {kwargs}\t'
+                    f'Channel: {interaction.channel.name}')
+        return await func(interaction, **kwargs)
+    return wrapper
+
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game('with fire. Type /help!'))
     logger.info(f'Logged in as {client.user} (ID: {client.user.id})')
-
-# def handle_errors(func):
-#     async def wrapper(interaction: discord.Interaction, *args, **kwargs):
-#         try:
-#             return await func(interaction, *args, **kwargs)
-#         except Exception as e:
-#             logger.error(f'Error in {func.__name__}: {e}')
-#             embed = discord.Embed(title='Error')
-#             embed.add_field(name='Command Error', value=f'There was an error while executing the command.')
-#             embed.set_thumbnail(url=error_icon_url)
-#             await interaction.response.send_message(embed=embed, ephemeral=True)
-#     return wrapper
-
-async def is_blacklisted(interaction: discord.Interaction):
-    if interaction.user.id in bot_config.blacklisted_users:
-        return False #blacklisted. Seems backwards, but it's not.
-        await interaction.response.send_message(f'You are blacklisted from using commands.', ephemeral=True)
-        logger.info(f'{interaction.user.name} ({interaction.user.id}) is blacklisted from using commands.')
-    return True #not blacklisted
-
-# def log_command(func):
-#     async def wrapper(interaction: discord.Interaction, *args, **kwargs):
-#         logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {func.__name__}\t Options: {kwargs}\t'
-#                     f'Channel: {interaction.channel.name}')
-#         return await func(interaction, *args, **kwargs)
-#     return wrapper
 
 # The rename decorator allows us to change the display of the parameter on Discord.
 @client.tree.command()
@@ -129,29 +122,44 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Member Info')
+#@log_command
 @app_commands.check(is_blacklisted)
 async def show_member_info(interaction: discord.Interaction, member: discord.Member):
     try:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         tdelta = now - member.joined_at
         if tdelta.days == 0:
-            joined_at = f'That\'s {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+            joined_at = f'That\'s {tdelta.seconds // 3600} hours, ' \
+                        f'{(tdelta.seconds // 60) % 60} minutes, ' \
+                        f'{tdelta.seconds % 60} seconds ago'
         else:
-            joined_at = f'That\'s {tdelta.days} days, {tdelta.seconds // 3600} hours, {(tdelta.seconds // 60) % 60} minutes, {tdelta.seconds % 60} seconds ago'
+            joined_at = f'That\'s {tdelta.days} days, ' \
+                        f'{tdelta.seconds // 3600} hours, ' \
+                        f'{(tdelta.seconds // 60) % 60} minutes, ' \
+                        f'{tdelta.seconds % 60} seconds ago'
         if len([role.mention for role in member.roles[1:]]) == 0:
             roles = 'None'
         else:
             roles = '\n'.join([role.mention for role in member.roles[1:]])
 
-        embed = discord.Embed(title=f'Member Info for {member}', color=member.color)
-        embed.add_field(name=f'{member.display_name} joined on {discord.utils.format_dt(member.joined_at)}',
+        embed = discord.Embed(title=f'Member Info for {member}',
+                              color=member.color
+                              )
+        embed.add_field(name=f'{member.display_name} joined on '
+                             f'{discord.utils.format_dt(member.joined_at)}',
                         value=joined_at)
-        embed.add_field(name="Roles", value=roles, inline=False)
-        embed.set_author(name=member.display_name, icon_url=member.avatar)
-        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\tCommand: {show_member_info.name}\tOptions:'
-                    f'{member} ({member.id})\tChannel: {interaction.channel.name}')
+        embed.add_field(name="Roles", value=roles,
+                        inline=False
+                        )
+        embed.set_author(name=member.display_name,
+                         icon_url=member.avatar
+                         )
+        logger.info(f'User: {interaction.user.name} ({interaction.user.id})\t'
+                    f'Command: {show_member_info.name}\t'
+                    f'Options: {member} ({member.id})\t'
+                    f'Channel: {interaction.channel.name}')
         await interaction.response.send_message(embed=embed)
-    except Exception as e:
+    except Exception:
         logger.error("Exception occurred", exc_info=True)
 
 @client.tree.command()
@@ -161,7 +169,9 @@ async def show_member_info(interaction: discord.Interaction, member: discord.Mem
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spooky(interaction: discord.Interaction):
     """There's always money in the banana stand!"""
-    await interaction.response.send_message('https://tenor.com/view/arrested-development-claw-hand-juice-box-laughing-evil-laugh-gif-5335530')
+    await interaction.response.send_message(
+        'https://tenor.com/view/arrested-development-claw-hand-juice-box-laughing-evil-laugh-gif-5335530'
+    )
 
 @client.tree.command()
 #@log_command
@@ -178,7 +188,9 @@ async def scrumpy(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def golfclap(interaction: discord.Interaction):
     """Well played"""
-    await interaction.response.send_message('https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611')
+    await interaction.response.send_message(
+        'https://tenor.com/view/charlie-sheen-emilio-estevez-golf-clap-men-at-work-gif-7577611'
+    )
 
 @client.tree.command()
 #@log_command
@@ -187,7 +199,9 @@ async def golfclap(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def whatever(interaction: discord.Interaction):
     """Whatever man"""
-    await interaction.response.send_message('https://media.discordapp.net/attachments/765619338337058827/802299499908563024/whatever.gif')
+    await interaction.response.send_message(
+        'https://media.discordapp.net/attachments/765619338337058827/802299499908563024/whatever.gif'
+    )
 
 @client.tree.command()
 #@log_command
@@ -195,7 +209,9 @@ async def whatever(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cool(interaction: discord.Interaction):
     """Peralta says"""
-    await interaction.response.send_message('https://tenor.com/view/andy-samberg-brooklyn99-jake-peralta-cool-gif-12063970')
+    await interaction.response.send_message(
+        'https://tenor.com/view/andy-samberg-brooklyn99-jake-peralta-cool-gif-12063970'
+    )
 
 @client.tree.command()
 #@log_command
@@ -203,7 +219,9 @@ async def cool(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst(interaction: discord.Interaction):
     """Is it though?"""
-    await interaction.response.send_message('https://tenor.com/view/is-it-though-thor-smile-gif-13334930')
+    await interaction.response.send_message(
+        'https://tenor.com/view/is-it-though-thor-smile-gif-13334930'
+    )
 
 @client.tree.command()
 #@log_command
@@ -212,7 +230,9 @@ async def myst(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def myst2(interaction: discord.Interaction):
     """I mean..."""
-    await interaction.response.send_message('https://tenor.com/view/shrug-what-huh-will-smith-i-mean-gif-15916247')
+    await interaction.response.send_message(
+        'https://tenor.com/view/shrug-what-huh-will-smith-i-mean-gif-15916247'
+    )
 
 @client.tree.command()
 #@log_command
@@ -232,7 +252,10 @@ async def happybirthday(interaction: discord.Interaction):
     """Party at Kat's place!"""
     #check if today is April 21st
     if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 21:
-        await interaction.response.send_message('https://tenor.com/view/we-dont-do-that-here-black-panther-tchalla-bruce-gif-16558003', ephemeral=True)
+        await interaction.response.send_message(
+            'https://tenor.com/view/we-dont-do-that-here-black-panther-tchalla-bruce-gif-16558003',
+            ephemeral=True
+        )
     else:
         await interaction.response.send_message('https://giphy.com/gifs/i8htPQwChFOVcpnImq')
 
@@ -243,7 +266,9 @@ async def happybirthday(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def magic(interaction: discord.Interaction):
     """Don't ask how"""
-    await interaction.response.send_message('https://media.discordapp.net/attachments/676183284123828236/761438362720272394/Kat_Confetti.gif')
+    await interaction.response.send_message(
+        'https://media.discordapp.net/attachments/676183284123828236/761438362720272394/Kat_Confetti.gif'
+    )
 
 @client.tree.command()
 #@log_command
@@ -279,7 +304,9 @@ async def suckit(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def risn(interaction: discord.Interaction):
     """K"""
-    await interaction.response.send_message('https://www.circlek.com/themes/custom/circlek/images/logos/logo-full-color-rgb.jpg')
+    await interaction.response.send_message(
+        'https://www.circlek.com/themes/custom/circlek/images/logos/logo-full-color-rgb.jpg'
+    )
 
 @client.tree.command()
 #@log_command
@@ -288,7 +315,9 @@ async def risn(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def hakkd(interaction: discord.Interaction):
     """Don't let it happen again"""
-    await interaction.response.send_message('https://tenor.com/view/mad-monster-dont-let-it-happen-again-gif-14024298')
+    await interaction.response.send_message(
+        'https://tenor.com/view/mad-monster-dont-let-it-happen-again-gif-14024298'
+    )
 
 @client.tree.command()
 #@log_command
@@ -306,7 +335,9 @@ async def wtf(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rain(interaction: discord.Interaction):
     """Lil bih"""
-    await interaction.response.send_message('https://cdn.discordapp.com/attachments/676183384061378571/856642945481310228/unknown.png')
+    await interaction.response.send_message(
+        'https://cdn.discordapp.com/attachments/676183384061378571/856642945481310228/unknown.png'
+    )
 
 @client.tree.command()
 #@log_command
@@ -324,7 +355,9 @@ async def daddychill(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def rightright(interaction: discord.Interaction):
     """From a show about nothing"""
-    await interaction.response.send_message('https://tenor.com/view/seinfeld-jerry-seinfeld-oh-right-agree-gif-4436696')
+    await interaction.response.send_message(
+        'https://tenor.com/view/seinfeld-jerry-seinfeld-oh-right-agree-gif-4436696'
+    )
 
 @client.tree.command()
 #@log_command
@@ -342,7 +375,10 @@ async def hydrate(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def spoon(interaction: discord.Interaction):
     """My spoon is too big"""
-    await interaction.response.send_message('https://media.discordapp.net/attachments/503025662546935809/747820543918735370/A_little_party_never_killed_no_body_gif.gif')
+    await interaction.response.send_message(
+        'https://media.discordapp.net/attachments/503025662546935809/747820543918735370/'
+        'A_little_party_never_killed_no_body_gif.gif'
+    )
 
 @client.tree.command()
 #@log_command
@@ -351,7 +387,9 @@ async def spoon(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def imdumb(interaction: discord.Interaction):
     """I'm dumb"""
-    await interaction.response.send_message('https://tenor.com/view/winston-schmidt-max-greenfield-new-girl-gif-15041554')
+    await interaction.response.send_message(
+        'https://tenor.com/view/winston-schmidt-max-greenfield-new-girl-gif-15041554'
+    )
 
 @client.tree.command()
 #@log_command
@@ -360,7 +398,9 @@ async def imdumb(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def aster(interaction: discord.Interaction):
     """That face. That goddamn face."""
-    await interaction.response.send_message('https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png')
+    await interaction.response.send_message(
+        'https://cdn.discordapp.com/attachments/938971434246631435/940347663533084732/Chaotic_Aster.png'
+    )
 
 @client.tree.command()
 #@log_command
@@ -378,7 +418,9 @@ async def pig(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def listen(interaction: discord.Interaction):
     """listen here"""
-    await interaction.response.send_message('https://i.pinimg.com/originals/ef/a6/48/efa648c67f3cb05287ded99612af130f.png')
+    await interaction.response.send_message(
+        'https://i.pinimg.com/originals/ef/a6/48/efa648c67f3cb05287ded99612af130f.png'
+    )
 
 @client.tree.command()
 #@log_command
@@ -396,7 +438,9 @@ async def nyrixx(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def yzu(interaction: discord.Interaction):
     """eli5"""
-    await interaction.response.send_message('https://tenor.com/view/confused-the-office-michael-scott-steve-carell-explain-this-to-me-like-im-five-gif-4527435')
+    await interaction.response.send_message(
+        'https://tenor.com/view/confused-the-office-michael-scott-steve-carell-explain-this-to-me-like-im-five-gif-4527435'
+    )
 
 @client.tree.command()
 #@log_command
@@ -405,7 +449,9 @@ async def yzu(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def ben(interaction: discord.Interaction):
     """Finger"""
-    await interaction.response.send_message('https://media.discordapp.net/attachments/199644505845137408/798327813479727114/2015-02-10.gif')
+    await interaction.response.send_message(
+        'https://media.discordapp.net/attachments/199644505845137408/798327813479727114/2015-02-10.gif'
+    )
 
 @client.tree.command()
 #@log_command
@@ -433,7 +479,9 @@ async def kat(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def cheers(interaction: discord.Interaction):
     """Cheers mate"""
-    await interaction.response.send_message("https://cdn.discordapp.com/attachments/775444197468667904/1042974872407646218/trim.9B102A43-2EA1-4846-847C-25468EB6804C.gif")
+    await interaction.response.send_message(
+        'https://cdn.discordapp.com/attachments/775444197468667904/1042974872407646218/trim.9B102A43-2EA1-4846-847C-25468EB6804C.gif'
+    )
 
 @client.tree.command()
 #@log_command
@@ -473,7 +521,9 @@ async def mock(interaction: discord.Interaction, mock: str):
     if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
         mocking_text = "I'm A bIg DuMb SmElLy IdIoT"
     else:
-        mocking_text = (''.join([letter.lower() if index % 2 == 0 else letter.upper() for index, letter in enumerate(mock)]))
+        mocking_text = (''.join([letter.lower()
+                                 if index % 2 == 0 else letter.upper()
+                                 for index, letter in enumerate(mock)]))
     await interaction.response.send_message(mocking_text)
 
 @client.tree.command()
@@ -486,9 +536,14 @@ async def mightcon2(interaction: discord.Interaction):
     path = "/home/ubuntu/beymax/mightcon2_pics"
     files = os.listdir(path)
     image = random.choice(files)
-    embed = discord.Embed(title="Mightcon 2: Las Vegas", description="Random memory from Mightcon 2!",
-                          color=0x0000ff, url="https://imgur.com/a/iJ3axyF")
-    file = discord.File(f"{path}/{image}", filename=image)
+    embed = discord.Embed(title="Mightcon 2: Las Vegas",
+                          description="Random memory from Mightcon 2!",
+                          color=0x0000ff,
+                          url="https://imgur.com/a/iJ3axyF"
+                          )
+    file = discord.File(f"{path}/{image}",
+                        filename=image
+                        )
     embed.set_image(url=f"attachment://{image}")
     await interaction.response.send_message(embed=embed, file=file)
 
@@ -499,7 +554,9 @@ async def mightcon2(interaction: discord.Interaction):
 @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild_id, i.user.id))
 async def sixtynine(interaction: discord.Interaction):
     """Nice"""
-    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1039705067235835934/1043215596181016666/IMG_3549.jpg")
+    await interaction.response.send_message(
+        "https://cdn.discordapp.com/attachments/1039705067235835934/1043215596181016666/IMG_3549.jpg"
+    )
     
 
 @client.tree.command()
@@ -518,15 +575,20 @@ async def token(interaction: discord.Interaction):
         embed = discord.Embed(title='WoW Token')
         # check if today is April First
         if datetime.datetime.today().month == 4 and datetime.datetime.today().day == 1:
-            embed.add_field(name='Current Price', value=f'696969 gold lol')
+            embed.add_field(name='Current Price',
+                            value='696969 gold lol')
         else:
-            embed.add_field(name='Current Price', value=f'{token_object["price"] / 10000:,.0f} gold')
+            embed.add_field(name='Current Price',
+                            value=f'{token_object["price"] / 10000:,.0f} gold'
+                            )
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/676183284123828236/679823287521771602/mightcolored'
                 'finishedsmall.png')
         await interaction.response.send_message(embed=embed)
-    except Exception as e:
-        await interaction.response.send_message("Something went wrong. Please try again later.")
+    except Exception:
+        await interaction.response.send_message(
+            "Something went wrong. Please try again later."
+        )
 
 @client.tree.command()
 #@log_command
@@ -546,8 +608,10 @@ async def status(interaction: discord.Interaction):
             region: str = server_object['realms'][0]['region']['name']
             country: str = server_object['realms'][0]['category']
             timezone: str = server_object['realms'][0]['timezone']
-            connections: list = field(default_factory=lambda: [server_object['realms'][x]['name'] for x in
-                                                               range(len(server_object['realms']))])
+            connections: list = field(
+                default_factory=lambda: [server_object['realms'][x]['name']
+                                         for x in range(len(server_object['realms']))]
+            )
             name: str = 'Arygos'
 
         server = Server()
@@ -560,27 +624,45 @@ async def status(interaction: discord.Interaction):
         server_string = ', '.join(str(name) for name in server.connections)
 
         embed = discord.Embed(title='Arygos', color=status_color)
-        embed.add_field(name='Current Status', value=f'Server is currently {server.status}', inline=True)
+        embed.add_field(name='Current Status',
+                        value=f'Server is currently {server.status}',
+                        inline=True
+                        )
         if server.population == 'Offline':
-            embed.add_field(name='Current Population', value=f'This server is currently {server.population}')
+            embed.add_field(name='Current Population',
+                            value=f'This server is currently {server.population}'
+                            )
         else:
-            embed.add_field(name='Current Population', value=f'This is a {server.population} pop server', inline=True)
-        embed.add_field(name='Connected Realms', value=server_string, inline=False)
+            embed.add_field(name='Current Population',
+                            value=f'This is a {server.population} pop server',
+                            inline=True
+                            )
+        embed.add_field(name='Connected Realms',
+                        value=server_string,
+                        inline=False
+                        )
         if server.has_queue:
-            embed.add_field(name='Queue Active', value='Server has a login queue')
-        embed.add_field(name="Timezone", value=server.timezone, inline=True)
+            embed.add_field(name='Queue Active',
+                            value='Server has a login queue'
+                            )
+        embed.add_field(name="Timezone",
+                        value=server.timezone,
+                        inline=True
+                        )
         embed.set_thumbnail(url=might_logo)
         await interaction.response.send_message(embed=embed)
-    except Exception as e:
+    except Exception:
         logger.error("Exception occurred with server status", exc_info=True)
-        await interaction.response.send_message("Something went wrong. Please try again later.")
+        await interaction.response.send_message(
+            "Something went wrong. Please try again later."
+        )
 
 # Get the names of all the commands in this file to make a help command
 command_list: list = [f'/{x.name}' for x in client.tree.walk_commands()]
 command_list.sort()
 middle_index = len(command_list)//2
-help_string1: str = f'\n'.join(str(name) for name in command_list[:middle_index])
-help_string2: str = f'\n'.join(str(name) for name in command_list[middle_index:])
+help_string1: str = '\n'.join(str(name) for name in command_list[:middle_index])
+help_string2: str = '\n'.join(str(name) for name in command_list[middle_index:])
 
 @client.tree.command()
 #@log_command
